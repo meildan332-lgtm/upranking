@@ -113,20 +113,42 @@
     </div>
 
     <script>
-// 1. Vercel 서버에서 진짜 데이터를 가져오는 함수
-// 1. Vercel 서버에서 데이터를 가져오는 함수
+// 1. 위젯 화면의 기본 정보(제목, 마감일) 세팅하기
+function setupWidgetUI(urlParams) {
+    const title = urlParams.get('title');
+    const deadline = urlParams.get('deadline');
+
+    // 🚨 중요: 아래 "title-element", "deadline-element" 부분을
+    // 실제 HTML에 적혀있는 제목과 마감일 태그의 id 이름으로 꼭 바꿔주세요!
+    if (title) {
+        const titleEl = document.getElementById("title-element"); 
+        if (titleEl) titleEl.innerText = title;
+    }
+    
+    if (deadline) {
+        const deadlineEl = document.getElementById("deadline-element"); 
+        if (deadlineEl) deadlineEl.innerText = `마감일: ${deadline}`;
+    }
+}
+
+// 2. 서버에서 실시간 댓글 데이터 가져오기
 async function fetchRealComments() {
     const urlParams = new URLSearchParams(window.location.search);
-    const targetUrl = urlParams.get('url');
+    
+    // 처음 한 번만 UI(제목, 마감일) 업데이트 실행
+    if (!window.uiSetupDone) {
+        setupWidgetUI(urlParams);
+        window.uiSetupDone = true;
+    }
 
+    const targetUrl = urlParams.get('url');
     if (!targetUrl) return;
 
-    // 💡 링크에서 하이라이트할 댓글 번호 추출 (예: #comment_noti117784175 -> 117784175)
+    // 링크에서 하이라이트할 댓글 번호 추출 (#comment_noti...)
     const match = targetUrl.match(/#comment_noti(\d+)/);
     const targetCommentId = match ? match[1] : null;
 
     try {
-        // 서버에 요청할 때는 # 꼬리표를 떼고 깔끔한 주소만 보냅니다.
         const cleanUrl = targetUrl.split('#')[0];
         const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}`;
         
@@ -134,11 +156,8 @@ async function fetchRealComments() {
         if (!response.ok) throw new Error("서버 통신 오류");
         
         const data = await response.json();
-        
-        // 콘솔창에 데이터 띄워두기 (SOOP 데이터 구조 파악용)
-        console.log("SOOP 원본 데이터:", data);
+        console.log("SOOP 원본 데이터:", data); // F12 콘솔창 확인용
 
-        // 2. 데이터와 타겟 번호를 같이 넘겨서 화면에 그리기
         renderComments(data, targetCommentId);
 
     } catch (error) {
@@ -146,53 +165,50 @@ async function fetchRealComments() {
     }
 }
 
-// 3. 댓글 화면에 그리기 (맨 위 고정 로직 포함)
+// 3. 댓글 화면에 그리기
 function renderComments(data, targetCommentId) {
-    const listContainer = document.getElementById("여기에_댓글리스트_ID입력"); // 👈 실제 HTML의 id로 변경 필수!
+    // 🚨 중요: "comment-list-container" 부분을 실제 HTML의 댓글 리스트 박스 id로 바꿔주세요!
+    const listContainer = document.getElementById("comment-list-container"); 
     if (!listContainer) return;
+    
     listContainer.innerHTML = ""; // 기존 내용 초기화
 
-    // SOOP API 실제 배열 경로 (data.data 등, 콘솔창 확인 후 수정 필요할 수 있음)
+    // SOOP 데이터 배열 경로 (만약 안 나오면 콘솔창 확인 후 data.list 등으로 변경)
     const comments = data.data || data.comment_list || []; 
 
     let pinnedComment = null;
     let otherComments = [];
 
-    // 💡 전체 댓글을 순회하면서 "고정할 댓글"과 "나머지 댓글"을 분리합니다.
     comments.forEach(comment => {
-        // SOOP의 실제 댓글 번호 변수명 (comment_no 등) 찾아서 매칭 필요
-        const currentCommentId = String(comment.comment_no || comment.c_no || comment.id || "");
+        // SOOP 댓글 번호 변수명 (comment_no 등)
+        const currentCommentId = String(comment.comment_no || comment.id || "");
         
         if (targetCommentId && currentCommentId === targetCommentId) {
-            pinnedComment = comment; // 내 댓글 발견!
+            pinnedComment = comment;
         } else {
-            otherComments.push(comment); // 나머지는 따로 모아둠
+            otherComments.push(comment);
         }
     });
 
-    // --- 화면 그리기 시작 ---
-
-    // 1️⃣ 고정 댓글(내 댓글)을 가장 먼저 화면 맨 위에 그립니다.
+    // 고정 댓글 먼저 렌더링
     if (pinnedComment) {
         createCommentElement(listContainer, pinnedComment, "📌", "highlight-item");
     }
 
-    // 2️⃣ 나머지 댓글들을 그 아래에 순위대로 그립니다.
+    // 나머지 일반 댓글 렌더링
     otherComments.forEach((comment, index) => {
-        // 고정 댓글이 있다면 2등부터 시작, 없다면 1등부터 시작
         const rank = pinnedComment ? index + 2 : index + 1;
         createCommentElement(listContainer, comment, rank, "normal-item");
     });
 }
 
-// 4. HTML 요소를 생성하는 헬퍼 함수
+// 4. HTML 요소를 생성하는 함수
 function createCommentElement(container, comment, rankText, extraClass) {
-    // SOOP API의 실제 닉네임, 내용 변수명 확인 후 수정 필요
+    // SOOP 데이터 변수명에 맞게 닉네임과 내용 추출
     const nickname = comment.user_nickname || comment.user_id || "알 수 없음";
     const content = comment.comment || comment.content || "내용 없음";
     
     const listItem = document.createElement("div");
-    // 고정 댓글이면 특별한 클래스(highlight-item)를 추가합니다.
     listItem.className = `comment-item ${extraClass}`; 
     
     listItem.innerHTML = `
