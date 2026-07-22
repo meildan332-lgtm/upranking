@@ -33,10 +33,10 @@ export default async function handler(req, res) {
 
     // 🎯 3. 찾아내신 SOOP Request URL 완벽 조립
     // page=1 : 첫 페이지 댓글
-    // orderBy=reg_date : 등록일순(또는 추천순 정렬 조건이 필요하다면 추후 변경 가능)
+    // orderBy=like_cnt : 추천수(인기)순 정렬
     // pHighlightNo : 하이라이트할 댓글 번호 (있으면 몇 페이지에 있든 응답에 포함되어 옴)
     const highlightParam = highlight ? `&pHighlightNo=${encodeURIComponent(highlight)}` : '';
-    const targetApiUrl = `https://api-channel.sooplive.com/v1.1/channel/${channelId}/post/${postId}/comment?page=1&orderBy=reg_date&cCommentNo=0${highlightParam}`;
+    const targetApiUrl = `https://api-channel.sooplive.com/v1.1/channel/${channelId}/post/${postId}/comment?page=1&orderBy=like_cnt&cCommentNo=0${highlightParam}`;
 
     // 4. SOOP 서버에 API 요청 (방어막 우회)
     const response = await fetch(targetApiUrl, {
