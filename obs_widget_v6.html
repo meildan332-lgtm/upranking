@@ -127,19 +127,19 @@
 </head>
 <body>
     <div id="widget-container">
-        <!-- 상단 헤더: 제목(좌) / 마감일자(우) -->
-        <div class="widget-header">
-            <h2 class="widget-title" id="widget-title-display">🔥 핫클립 랭킹</h2>
-            <div id="deadline-display" class="deadline-text" style="display: none;"></div>
-        </div>
-        <div id="comment-list"></div>
-        
         <div class="qr-section" id="qr-section">
             <div id="qr-code-img" class="qr-image"></div>
             <div class="qr-text-col">
                 <div class="qr-desc" id="qr-desc"></div>
             </div>
         </div>
+
+        <!-- 상단 헤더: 제목(좌) / 마감일자(우) -->
+        <div class="widget-header">
+            <h2 class="widget-title" id="widget-title-display">🔥 핫클립 랭킹</h2>
+            <div id="deadline-display" class="deadline-text" style="display: none;"></div>
+        </div>
+        <div id="comment-list"></div>
 
         <div class="update-time" id="update-time-display"></div>
     </div>
@@ -234,6 +234,8 @@ async function fetchRealComments() {
 
     const cutoff = parseInt(urlParams.get('cutoff'), 10) || 0;
     const mode = urlParams.get('mode') || 'top';
+    const aroundUp = parseInt(urlParams.get('aroundUp'), 10);
+    const aroundDown = parseInt(urlParams.get('aroundDown'), 10);
 
     try {
         const cleanUrl = targetUrl.split('#')[0];
@@ -246,7 +248,7 @@ async function fetchRealComments() {
         const data = await response.json();
         console.log("SOOP 원본 데이터:", data);
 
-        renderComments(data, targetCommentId, cutoff, mode);
+        renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown);
 
         const updateEl = document.getElementById("update-time-display");
         if (updateEl) {
@@ -268,7 +270,7 @@ function getCommentKey(comment, fallbackIndex) {
 }
 
 // 3. 댓글 목록 업데이트 (지우고 다시 그리는 대신, 기존 엘리먼트 재사용 + 순서만 이동)
-function renderComments(data, targetCommentId, cutoff, mode) {
+function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown) {
     const listContainer = document.getElementById("comment-list");
     if (!listContainer) return;
 
@@ -306,9 +308,10 @@ function renderComments(data, targetCommentId, cutoff, mode) {
 
     let visibleComments = rankedComments.map((c, i) => ({ comment: c, rank: i + 1 }));
     if (mode === 'around' && pinnedComment) {
-        const windowSize = 3;
+        const upCount = Number.isFinite(aroundUp) && aroundUp >= 0 ? aroundUp : 3;
+        const downCount = Number.isFinite(aroundDown) && aroundDown >= 0 ? aroundDown : 3;
         const centerRank = pinnedRank;
-        visibleComments = visibleComments.filter(v => Math.abs(v.rank - centerRank) <= windowSize);
+        visibleComments = visibleComments.filter(v => v.rank >= centerRank - upCount && v.rank <= centerRank + downCount);
     }
 
     // 이번 새로고침에서 보여야 할 행(row) 순서 계산

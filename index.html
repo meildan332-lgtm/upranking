@@ -6,8 +6,9 @@
     <title>업랭크 오버레이 생성기</title>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        body { font-family: 'Pretendard', sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        body { font-family: 'Pretendard', sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .page-wrapper { display: flex; gap: 20px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 940px; margin: 0 auto; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; box-sizing: border-box; }
         h2 { margin-top: 0; color: #333; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
@@ -16,67 +17,101 @@
         textarea::placeholder { color: #aaa; }
         .radio-group { display: flex; gap: 15px; }
         .radio-group label { font-weight: normal; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        .range-row { display: flex; gap: 10px; }
+        .range-row .form-group { flex: 1; margin-bottom: 0; }
         button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
         button:hover { background-color: #0056b3; }
         .result-box { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 6px; display: none; word-break: break-all; }
         .divider { height: 1px; background-color: #eee; margin: 20px 0; }
+        .size-hint { font-size: 13px; color: #777; text-align: center; margin: 14px 0 0; }
+
+        .preview-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; box-sizing: border-box; display: none; }
+        .preview-panel h3 { margin-top: 0; margin-bottom: 12px; color: #333; font-size: 16px; }
+        .preview-frame-wrap { background: #1b1b1b; border-radius: 8px; padding: 10px; overflow: auto; }
+        .preview-frame { width: 100%; height: 560px; border: 0; background: transparent; display: block; }
+        .preview-hint { font-size: 12px; color: #888; margin-top: 10px; line-height: 1.5; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>⚙️ 업랭크 오버레이 생성기</h2>
-        
-        <div class="form-group">
-            <label>컨텐츠 제목</label>
-            <input type="text" id="contentTitle">
-        </div>
+    <div class="page-wrapper">
+        <div class="container">
+            <h2>⚙️ 업랭크 오버레이 생성기</h2>
 
-        <div class="form-group">
-            <label>내 댓글 링크 (고정할 대상)</label>
-            <input type="text" id="targetLink">
-        </div>
-        
-        <div class="form-group">
-            <label>커트라인 순위 (이하 회색 처리)</label>
-            <input type="number" id="cutoff">
-        </div>
-        
-        <div class="form-group">
-            <label>마감 일자 (선택)</label>
-            <input type="date" id="deadline">
-        </div>
-        
-        <div class="form-group">
-            <label>댓글 표시 방식</label>
-            <div class="radio-group">
-                <label><input type="radio" name="mode" value="top" checked> 1위부터 모두 보기</label>
-                <label><input type="radio" name="mode" value="around"> 내 순위 주변만 보기</label>
-            </div>
-        </div>
-
-        <div class="divider"></div>
-        
-        <!-- QR 코드 설정 영역 -->
-        <div class="form-group">
-            <label>QR 코드 표시</label>
-            <div class="radio-group">
-                <label><input type="radio" name="qrMode" value="on" checked onchange="toggleQrInputs()"> 켜기 (ON)</label>
-                <label><input type="radio" name="qrMode" value="off" onchange="toggleQrInputs()"> 끄기 (OFF)</label>
-            </div>
-        </div>
-
-        <div id="qrSettingsBox">
             <div class="form-group">
-                <label>QR 코드 안내 문구</label>
-                <textarea id="qrText" placeholder="예: 📱 스마트폰으로 카메라를 켜서 스캔해보세요!&#10;로그인 후 따봉(👍)을 눌러 순위를 올려주세요."></textarea>
+                <label>컨텐츠 제목</label>
+                <input type="text" id="contentTitle">
+            </div>
+
+            <div class="form-group">
+                <label>내 댓글 링크 (고정할 대상)</label>
+                <input type="text" id="targetLink">
+            </div>
+
+            <div class="form-group">
+                <label>커트라인 순위 (이하 회색 처리)</label>
+                <input type="number" id="cutoff">
+            </div>
+
+            <div class="form-group">
+                <label>마감 일자 (선택)</label>
+                <input type="date" id="deadline">
+            </div>
+
+            <div class="form-group">
+                <label>댓글 표시 방식</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="mode" value="top" checked onchange="toggleModeInputs()"> 1위부터 모두 보기</label>
+                    <label><input type="radio" name="mode" value="around" onchange="toggleModeInputs()"> 내 순위 주변만 보기</label>
+                </div>
+            </div>
+
+            <div id="aroundRangeBox" class="form-group" style="display:none;">
+                <div class="range-row">
+                    <div class="form-group">
+                        <label>내 순위 위로 몇 개</label>
+                        <input type="number" id="aroundUp" value="3" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>내 순위 아래로 몇 개</label>
+                        <input type="number" id="aroundDown" value="3" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- QR 코드 설정 영역 -->
+            <div class="form-group">
+                <label>QR 코드 표시</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="qrMode" value="on" checked onchange="toggleQrInputs()"> 켜기 (ON)</label>
+                    <label><input type="radio" name="qrMode" value="off" onchange="toggleQrInputs()"> 끄기 (OFF)</label>
+                </div>
+            </div>
+
+            <div id="qrSettingsBox">
+                <div class="form-group">
+                    <label>QR 코드 안내 문구</label>
+                    <textarea id="qrText" placeholder="예: 📱 스마트폰으로 카메라를 켜서 스캔해보세요!&#10;로그인 후 따봉(👍)을 눌러 순위를 올려주세요."></textarea>
+                </div>
+            </div>
+
+            <p class="size-hint">💡 OBS 브라우저 소스 권장 사이즈: 너비 100 / 높이 1000</p>
+
+            <button onclick="generateLink()">위젯 주소 생성 및 복사</button>
+
+            <div class="result-box" id="resultBox">
+                <strong style="display:block; margin-bottom:5px;">✅ 생성된 주소 (복사됨):</strong>
+                <span id="generatedUrl"></span>
             </div>
         </div>
-        
-        <button onclick="generateLink()">위젯 주소 생성 및 복사</button>
-        
-        <div class="result-box" id="resultBox">
-            <strong style="display:block; margin-bottom:5px;">✅ 생성된 주소 (복사됨):</strong>
-            <span id="generatedUrl"></span>
+
+        <div class="preview-panel" id="previewPanel">
+            <h3>👀 미리보기</h3>
+            <div class="preview-frame-wrap">
+                <iframe class="preview-frame" id="previewFrame"></iframe>
+            </div>
+            <p class="preview-hint">* "내 순위 주변만 보기"를 선택하면 표시되는 미리보기입니다.<br>* "내 댓글 링크"에 실제 게시글 주소가 입력되어 있어야 데이터가 보입니다.</p>
         </div>
     </div>
 
@@ -87,7 +122,13 @@
             qrSettingsBox.style.display = qrMode === 'on' ? 'block' : 'none';
         }
 
-        function generateLink() {
+        function toggleModeInputs() {
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            document.getElementById('aroundRangeBox').style.display = mode === 'around' ? 'block' : 'none';
+            document.getElementById('previewPanel').style.display = mode === 'around' ? 'block' : 'none';
+        }
+
+        function buildWidgetUrl() {
             const contentTitle = document.getElementById('contentTitle').value;
             const link = document.getElementById('targetLink').value;
             const cutoff = document.getElementById('cutoff').value;
@@ -95,26 +136,72 @@
             const mode = document.querySelector('input[name="mode"]:checked').value;
             const qrMode = document.querySelector('input[name="qrMode"]:checked').value;
             const qrText = document.getElementById('qrText').value;
-            
+            const aroundUp = document.getElementById('aroundUp').value;
+            const aroundDown = document.getElementById('aroundDown').value;
+
             const baseUrl = window.location.origin + '/obs_widget_v6.html';
-            
+
             let finalUrl = `${baseUrl}?title=${encodeURIComponent(contentTitle)}&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}`;
-            
-            if (deadline) finalUrl += `&deadline=${deadline}`;
-            
-            if (qrMode === 'on' && qrText.trim() !== '') {
-                finalUrl += `&qrtext=${encodeURIComponent(qrText)}`;
-            } else if (qrMode === 'on' && qrText.trim() === '') {
-                finalUrl += `&qrtext=`;
+
+            if (mode === 'around') {
+                finalUrl += `&aroundUp=${encodeURIComponent(aroundUp || '3')}&aroundDown=${encodeURIComponent(aroundDown || '3')}`;
             }
-            
+
+            if (deadline) finalUrl += `&deadline=${deadline}`;
+
+            if (qrMode === 'on') {
+                finalUrl += `&qrtext=${encodeURIComponent(qrText.trim())}`;
+            }
+
+            return finalUrl;
+        }
+
+        function generateLink() {
+            const finalUrl = buildWidgetUrl();
+
             document.getElementById('generatedUrl').innerText = finalUrl;
             document.getElementById('resultBox').style.display = 'block';
-            
+
             navigator.clipboard.writeText(finalUrl).then(() => {
                 alert("OBS용 주소가 클립보드에 복사되었습니다! OBS 브라우저 소스에 붙여넣으세요.");
             });
         }
+
+        let previewDebounceTimer = null;
+        function schedulePreviewUpdate() {
+            clearTimeout(previewDebounceTimer);
+            previewDebounceTimer = setTimeout(updatePreview, 400);
+        }
+
+        function updatePreview() {
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            const previewPanel = document.getElementById('previewPanel');
+
+            if (mode !== 'around') {
+                previewPanel.style.display = 'none';
+                return;
+            }
+            previewPanel.style.display = 'block';
+
+            const link = document.getElementById('targetLink').value.trim();
+            const frame = document.getElementById('previewFrame');
+
+            if (!link) {
+                frame.removeAttribute('src');
+                return;
+            }
+
+            frame.src = buildWidgetUrl();
+        }
+
+        // 입력값이 바뀔 때마다 미리보기를 갱신
+        document.querySelectorAll('.container input, .container textarea').forEach(el => {
+            el.addEventListener('input', schedulePreviewUpdate);
+            el.addEventListener('change', schedulePreviewUpdate);
+        });
+
+        toggleQrInputs();
+        toggleModeInputs();
     </script>
 </body>
 </html>
