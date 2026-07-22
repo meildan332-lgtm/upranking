@@ -24,36 +24,28 @@
             color: #ffffff;
         }
 
-        #widget-container {
-            width: 100%; max-width: 550px; display: flex; flex-direction: column; gap: 12px;
-            background-color: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 16px;
-            box-sizing: border-box;
-        }
+        #widget-container { width: 100%; max-width: 550px; display: flex; flex-direction: column; gap: 12px; }
 
         /* 헤더 부분 좌우 정렬을 위한 flex 속성 */
         .widget-header {
             display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0px; text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
         }
-        .widget-title { font-size: 24px; font-weight: 800; color: #ffffff; margin: 0; }
-        .deadline-text { font-size: 14px; color: #ffffff; font-weight: bold; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; }
+        .widget-title { font-size: 24px; font-weight: 800; color: #FFD700; margin: 0; }
+        .deadline-text { font-size: 14px; color: #FF5252; font-weight: bold; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; }
+
+        /* 댓글 목록: 자체적으로 flex + gap을 가져서 항목 사이 간격이 항상 보장되도록 함
+           (이게 없으면 커트라인이나 다음 댓글 박스가 서로 붙어 겹쳐 보일 수 있음) */
+        #comment-list { display: flex; flex-direction: column; gap: 10px; }
 
         .comment-box {
-            background-color: rgba(24, 24, 24, 1); 
+            background-color: rgba(24, 24, 24, 0.95); 
             border: 1px solid #333;
             border-radius: 12px;
             padding: 14px 20px;
             display: flex;
             align-items: center;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.4s ease-in-out forwards;
-            opacity: 0;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            will-change: transform, opacity;
         }
 
         .rank-col { width: 40px; font-size: 26px; font-weight: 900; text-align: center; margin-right: 15px; }
@@ -63,20 +55,47 @@
         .nickname-wrapper { display: flex; align-items: center; gap: 6px; }
         .nickname { font-size: 17px; font-weight: 800; color: #FFF; }
         .highlight-badge { background-color: #76c944; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
-        .userid { font-size: 14px; color: #ffffff; font-weight: 500; }
-        .post-date { font-size: 13px; color: #ffffff; }
+        .userid { font-size: 14px; color: #999; font-weight: 500; }
+        .content { font-size: 15px; color: #eee; font-weight: 500; }
+        .post-date { font-size: 13px; color: #777; }
 
-        .up-col { display: flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 900; color: #ffffff; }
+        .up-col { display: flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 900; color: #76c944; }
+        .thumb-icon { flex-shrink: 0; }
 
-        .pinned-comment { border: 2px solid #00BFFF; background-color: rgba(10, 25, 40, 0.95); box-shadow: 0 0 15px rgba(0, 191, 255, 0.3); margin-bottom: 8px; }
+        .pinned-comment { border: 2px solid #00BFFF; background-color: rgba(10, 25, 40, 0.95); box-shadow: 0 0 15px rgba(0, 191, 255, 0.3); }
         .pinned-badge { background-color: #00BFFF; color: #fff; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
 
-        .cutoff-line { width: 100%; height: 2px; background-color: #FF1744; margin: 8px 0; box-shadow: 0 0 8px #FF1744; display: flex; justify-content: center; align-items: center; }
-        .cutoff-text { background: #FF1744; color: white; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; margin-top: -15px; }
+        /* 커트라인: 자체 높이를 가진 행(row)으로 만들어서 위/아래 댓글에 절대 가려지지 않도록 함.
+           선은 ::before로 가로 전체에 그리고, 뱃지는 그 위에 relative로 얹어서 겹치지 않게 중앙 정렬 */
+        .cutoff-row {
+            position: relative;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cutoff-row::before {
+            content: "";
+            position: absolute;
+            left: 0; right: 0; top: 50%;
+            height: 2px;
+            background-color: #FF1744;
+            box-shadow: 0 0 8px #FF1744;
+        }
+        .cutoff-text {
+            position: relative;
+            z-index: 1;
+            background: #FF1744;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
 
         .grayed-out { filter: grayscale(100%); opacity: 0.5; }
-        .grayed-out .rank-col { color: #ffffff !important; }
-        .grayed-out .up-col { color: #ffffff; }
+        .grayed-out .rank-col { color: #777 !important; }
+        .grayed-out .up-col { color: #777; }
 
         .qr-section {
             display: none; 
@@ -88,9 +107,6 @@
             margin-top: 5px;
             gap: 15px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.4s ease-in-out forwards;
-            opacity: 0;
-            animation-delay: 0.5s;
         }
 
         .qr-image { width: 70px; height: 70px; background-color: white; padding: 4px; border-radius: 6px; }
@@ -119,7 +135,14 @@
     </div>
 
     <script>
-// 1. 위젯 화면의 기본 정보(제목, 마감일, QR) 세팅하기 - 실제 HTML의 id에 맞춤
+// 엄지 아이콘 SVG (이모지 대신 사용, currentColor를 써서 grayed-out 등 색상 규칙을 그대로 상속받음)
+const THUMB_SVG = `<svg class="thumb-icon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M1 21h4V9H1v12zM23 10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 8.59 6.59C8.22 6.95 8 7.45 8 8v11c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>`;
+
+// key(댓글 고유 식별자) -> DOM 엘리먼트 매핑. 새로고침마다 이 맵을 재사용해서
+// "지우고 다시 그리기"를 하지 않도록 함 (깜빡임 방지의 핵심)
+const commentElements = new Map();
+
+// 1. 위젯 화면의 기본 정보(제목, 마감일, QR) 세팅하기
 function setupWidgetUI(urlParams) {
     const title = urlParams.get('title');
     const deadline = urlParams.get('deadline');
@@ -149,7 +172,6 @@ function setupWidgetUI(urlParams) {
 async function fetchRealComments() {
     const urlParams = new URLSearchParams(window.location.search);
 
-    // 처음 한 번만 UI(제목, 마감일, QR) 업데이트 실행
     if (!window.uiSetupDone) {
         setupWidgetUI(urlParams);
         window.uiSetupDone = true;
@@ -161,7 +183,6 @@ async function fetchRealComments() {
         return;
     }
 
-    // 링크에서 하이라이트할 댓글 번호 추출 (#comment_noti...)
     const match = targetUrl.match(/#comment_noti(\d+)/);
     const targetCommentId = match ? match[1] : null;
 
@@ -170,14 +191,13 @@ async function fetchRealComments() {
 
     try {
         const cleanUrl = targetUrl.split('#')[0];
-        const highlightParam = targetCommentId ? `&highlight=${encodeURIComponent(targetCommentId)}` : '';
-        const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}${highlightParam}`;
+        const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}`;
 
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error(`서버 통신 오류 (${response.status})`);
 
         const data = await response.json();
-        console.log("SOOP 원본 데이터:", data); // F12 콘솔창에서 실제 필드명 확인용
+        console.log("SOOP 원본 데이터:", data);
 
         renderComments(data, targetCommentId, cutoff, mode);
 
@@ -192,20 +212,31 @@ async function fetchRealComments() {
     }
 }
 
-// 3. 댓글 화면에 그리기 (실제 HTML의 #comment-list 에 맞춤)
+// 댓글의 고유 key를 만든다. id가 있으면 id 기반, 없으면 닉네임+순번으로 fallback.
+function getCommentKey(comment, fallbackIndex) {
+    const id = comment.comment_no ?? comment.id ?? comment.commentNo;
+    if (id !== undefined && id !== null && id !== "") return 'c:' + String(id);
+    const nickname = comment.user_nickname || comment.nick_name || comment.user_id || "";
+    return 'c:' + nickname + ':' + fallbackIndex;
+}
+
+// 3. 댓글 화면 업데이트 (지우고 다시 그리는 대신, 기존 엘리먼트를 재사용 + 순서만 이동)
 function renderComments(data, targetCommentId, cutoff, mode) {
     const listContainer = document.getElementById("comment-list");
     if (!listContainer) return;
 
-    listContainer.innerHTML = ""; // 기존 내용 초기화
-
-    // SOOP 데이터 배열 경로 - 콘솔에 찍힌 원본 데이터 구조를 보고
-    // 아래 목록에 실제 경로가 없다면 추가/수정 해주세요.
     const comments = data.data || data.comment_list || data.list || data.result || [];
 
     if (!Array.isArray(comments) || comments.length === 0) {
-        listContainer.innerHTML = `<div style="color:#999; font-size:14px;">댓글이 없거나 데이터를 불러오지 못했습니다.</div>`;
+        if (commentElements.size === 0 && listContainer.children.length === 0) {
+            listContainer.innerHTML = `<div style="color:#999; font-size:14px;">댓글이 없거나 데이터를 불러오지 못했습니다.</div>`;
+        }
         return;
+    }
+
+    // 최초 데이터 수신 시 "댓글이 없습니다" 플레이스홀더 제거
+    if (commentElements.size === 0 && listContainer.children.length > 0) {
+        listContainer.innerHTML = "";
     }
 
     let pinnedComment = null;
@@ -213,9 +244,8 @@ function renderComments(data, targetCommentId, cutoff, mode) {
     const otherComments = [];
 
     comments.forEach((comment, idx) => {
-        const currentCommentId = String(comment.pCommentNo || comment.comment_no || comment.id || "");
-        const isFlaggedHighlight = comment.isHighlight === true;
-        if ((targetCommentId && currentCommentId === targetCommentId) || (!targetCommentId && isFlaggedHighlight && !pinnedComment)) {
+        const currentCommentId = String(comment.comment_no || comment.id || comment.commentNo || "");
+        if (targetCommentId && currentCommentId === targetCommentId) {
             pinnedComment = comment;
             pinnedIndex = idx;
         } else {
@@ -223,52 +253,123 @@ function renderComments(data, targetCommentId, cutoff, mode) {
         }
     });
 
-    // 추천수(좋아요) 기준 내림차순 정렬 → 진짜 "랭킹"
-    otherComments.sort((a, b) => (b.likeCnt ?? 0) - (a.likeCnt ?? 0));
-
-    // 표시할 댓글 목록 결정: 'top'(전체) vs 'around'(내 순위 주변만)
     let visibleComments = otherComments.map((c, i) => ({ comment: c, rank: i + 1 }));
-    if (mode === 'around' && pinnedComment) {
-        const windowSize = 3; // 내 순위 위/아래로 보여줄 개수
-        // 핀 댓글을 포함해 추천수로 정렬했을 때의 대략적인 순위를 기준으로 삼음
-        const centerRank = otherComments.filter(c => (c.likeCnt ?? 0) > (pinnedComment.likeCnt ?? 0)).length + 1;
+    if (mode === 'around' && pinnedIndex >= 0) {
+        const windowSize = 3;
+        const centerRank = pinnedIndex + 1;
         visibleComments = visibleComments.filter(v => Math.abs(v.rank - centerRank) <= windowSize);
     }
 
-    // 고정 댓글 먼저 렌더링 (항상 최상단, 📌 표시)
+    // 이번 새로고침에서 최종적으로 보여야 할 행(row) 순서를 계산
+    const rows = [];
     if (pinnedComment) {
-        createCommentElement(listContainer, pinnedComment, "📌", "pinned-comment", true);
+        rows.push({ key: 'pinned', type: 'comment', comment: pinnedComment, rankText: '📌', extraClass: 'pinned-comment', isPinned: true });
     }
 
-    // 커트라인 표시 여부 추적
-    let cutoffLineDrawn = false;
-
+    let cutoffDrawn = false;
     visibleComments.forEach(({ comment, rank }) => {
-        if (cutoff > 0 && rank === cutoff + 1 && !cutoffLineDrawn) {
-            drawCutoffLine(listContainer, cutoff);
-            cutoffLineDrawn = true;
+        if (cutoff > 0 && rank === cutoff + 1 && !cutoffDrawn) {
+            rows.push({ key: 'cutoff-line', type: 'cutoff', cutoff });
+            cutoffDrawn = true;
         }
         const isBelowCutoff = cutoff > 0 && rank > cutoff;
-        createCommentElement(listContainer, comment, rank, isBelowCutoff ? "grayed-out" : "", false);
+        rows.push({
+            key: getCommentKey(comment, rank),
+            type: 'comment',
+            comment,
+            rankText: rank,
+            extraClass: isBelowCutoff ? 'grayed-out' : '',
+            isPinned: false
+        });
+    });
+
+    // 순위 변동 애니메이션(FLIP)을 위해, 재배치 전 기존 엘리먼트 위치를 기록
+    const oldRects = new Map();
+    commentElements.forEach((el, key) => {
+        oldRects.set(key, el.getBoundingClientRect());
+    });
+
+    const newKeys = new Set(rows.map(r => r.key));
+
+    // 더 이상 화면에 없어야 하는 댓글 제거
+    commentElements.forEach((el, key) => {
+        if (!newKeys.has(key)) {
+            el.remove();
+            commentElements.delete(key);
+        }
+    });
+
+    // 각 행을 생성하거나(신규) 갱신(기존)하고, 올바른 순서로 재배치
+    const placed = [];
+    rows.forEach(row => {
+        let el = commentElements.get(row.key);
+        let isNew = false;
+
+        if (!el) {
+            isNew = true;
+            el = row.type === 'cutoff'
+                ? createCutoffElement(row.cutoff)
+                : createCommentElement(row.comment, row.rankText, row.extraClass, row.isPinned);
+            commentElements.set(row.key, el);
+        } else if (row.type === 'comment') {
+            updateCommentElement(el, row.comment, row.rankText, row.extraClass, row.isPinned);
+        }
+
+        // appendChild는 이미 존재하는 노드면 해당 위치로 "이동"시킴 (재생성 아님)
+        listContainer.appendChild(el);
+        placed.push({ el, key: row.key, isNew });
+    });
+
+    // 신규 항목은 부드럽게 페이드 인, 기존 항목은 순위 변동 시에만 슥 이동
+    placed.forEach(({ el, key, isNew }) => {
+        if (isNew) {
+            el.style.transition = 'none';
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(8px)';
+            requestAnimationFrame(() => {
+                el.style.transition = 'opacity 0.35s ease, transform 0.35s ease';
+                el.style.opacity = '1';
+                el.style.transform = 'translateY(0)';
+            });
+            return;
+        }
+
+        const oldRect = oldRects.get(key);
+        if (!oldRect) return;
+        const newRect = el.getBoundingClientRect();
+        const deltaY = oldRect.top - newRect.top;
+
+        if (Math.abs(deltaY) > 1) {
+            el.style.transition = 'none';
+            el.style.transform = `translateY(${deltaY}px)`;
+            // 강제 리플로우 후 트랜지션을 걸어 최종 위치로 애니메이션
+            void el.offsetHeight;
+            requestAnimationFrame(() => {
+                el.style.transition = 'transform 0.4s ease';
+                el.style.transform = 'translateY(0)';
+            });
+        }
     });
 }
 
-function drawCutoffLine(container, cutoff) {
-    const line = document.createElement("div");
-    line.className = "cutoff-line";
-    line.innerHTML = `<span class="cutoff-text">${cutoff}위 컷</span>`;
-    container.appendChild(line);
+function createCutoffElement(cutoff) {
+    const row = document.createElement("div");
+    row.className = "cutoff-row";
+    row.innerHTML = `<span class="cutoff-text">${cutoff}위 컷</span>`;
+    return row;
 }
 
-// 4. HTML 요소를 생성하는 함수 (프로필사진 / 닉네임 / 아이디 / 추천수만 표시)
-function createCommentElement(container, comment, rankText, extraClass, isPinned) {
-    const nickname = comment.userNick || comment.user_nickname || comment.userId || "알 수 없음";
-    const userId = comment.userId || comment.user_id || "";
-    const profileImg = comment.profileImage || comment.profile_image || "";
-    const upCount = comment.likeCnt ?? comment.up_cnt ?? comment.good_cnt ?? 0;
+// 신규 댓글 엘리먼트 생성 (최초 1회만 실행됨, 이후엔 updateCommentElement로 내용만 갱신)
+function createCommentElement(comment, rankText, extraClass, isPinned) {
+    const nickname = comment.user_nickname || comment.nick_name || comment.user_id || "알 수 없음";
+    const userId = comment.user_id || comment.user_nick || "";
+    const content = comment.comment || comment.content || "내용 없음";
+    const profileImg = comment.profile_image || comment.thumb_url || comment.profile_url || "";
+    const upCount = comment.up_cnt ?? comment.like_cnt ?? comment.good_cnt ?? comment.recommend_cnt ?? 0;
+    const regDate = comment.reg_date || comment.date || comment.created_at || "";
 
     const box = document.createElement("div");
-    box.className = `comment-box ${extraClass}`;
+    box.className = `comment-box ${extraClass}`.trim();
 
     box.innerHTML = `
         <div class="rank-col">${rankText}</div>
@@ -279,10 +380,70 @@ function createCommentElement(container, comment, rankText, extraClass, isPinned
                 ${isPinned ? `<span class="pinned-badge">내 댓글</span>` : ""}
             </div>
             <span class="userid">${escapeHtml(userId)}</span>
+            <span class="content">${escapeHtml(content)}</span>
+            ${regDate ? `<span class="post-date">${escapeHtml(String(regDate))}</span>` : ""}
         </div>
-        <div class="up-col">👍 ${upCount}</div>
+        <div class="up-col">${THUMB_SVG}<span class="up-count">${upCount}</span></div>
     `;
-    container.appendChild(box);
+    return box;
+}
+
+// 기존 댓글 엘리먼트의 "내용만" 갱신 (재생성하지 않음 -> 이미지 재로딩/깜빡임 없음)
+function updateCommentElement(el, comment, rankText, extraClass, isPinned) {
+    el.className = `comment-box ${extraClass}`.trim();
+
+    const nickname = comment.user_nickname || comment.nick_name || comment.user_id || "알 수 없음";
+    const userId = comment.user_id || comment.user_nick || "";
+    const content = comment.comment || comment.content || "내용 없음";
+    const profileImg = comment.profile_image || comment.thumb_url || comment.profile_url || "";
+    const upCount = comment.up_cnt ?? comment.like_cnt ?? comment.good_cnt ?? comment.recommend_cnt ?? 0;
+    const regDate = comment.reg_date || comment.date || comment.created_at || "";
+
+    const rankEl = el.querySelector('.rank-col');
+    if (rankEl && rankEl.textContent !== String(rankText)) rankEl.textContent = rankText;
+
+    const nickEl = el.querySelector('.nickname');
+    if (nickEl && nickEl.textContent !== nickname) nickEl.textContent = nickname;
+
+    const userIdEl = el.querySelector('.userid');
+    if (userIdEl && userIdEl.textContent !== userId) userIdEl.textContent = userId;
+
+    const contentEl = el.querySelector('.content');
+    if (contentEl && contentEl.textContent !== content) contentEl.textContent = content;
+
+    const infoCol = el.querySelector('.info-col');
+    let dateEl = el.querySelector('.post-date');
+    if (regDate) {
+        if (dateEl) {
+            if (dateEl.textContent !== String(regDate)) dateEl.textContent = regDate;
+        } else if (infoCol) {
+            dateEl = document.createElement('span');
+            dateEl.className = 'post-date';
+            dateEl.textContent = regDate;
+            infoCol.appendChild(dateEl);
+        }
+    } else if (dateEl) {
+        dateEl.remove();
+    }
+
+    const upEl = el.querySelector('.up-count');
+    if (upEl && upEl.textContent !== String(upCount)) upEl.textContent = upCount;
+
+    const img = el.querySelector('.profile-pic');
+    if (img && img.tagName === 'IMG' && profileImg && img.getAttribute('src') !== profileImg) {
+        img.src = profileImg;
+    }
+
+    const wrapper = el.querySelector('.nickname-wrapper');
+    const badge = el.querySelector('.pinned-badge');
+    if (isPinned && !badge && wrapper) {
+        const span = document.createElement('span');
+        span.className = 'pinned-badge';
+        span.textContent = '내 댓글';
+        wrapper.appendChild(span);
+    } else if (!isPinned && badge) {
+        badge.remove();
+    }
 }
 
 function escapeHtml(str) {
