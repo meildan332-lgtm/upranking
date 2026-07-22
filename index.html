@@ -52,6 +52,16 @@
         .preview-frame-wrap { background: #1b1b1b; border-radius: 8px; padding: 10px; overflow: auto; }
         .preview-frame { width: 300px; max-width: 100%; height: 560px; border: 0; background: transparent; display: block; }
         .preview-hint { font-size: 12px; color: #888; margin-top: 10px; line-height: 1.5; }
+
+        .footer-area { margin-top: 22px; padding-top: 18px; border-top: 1px solid #eee; text-align: center; }
+        .soop-link-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 10px 20px; border-radius: 8px; background-color: #1b1b1b; color: #fff;
+            text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s;
+        }
+        .soop-link-btn:hover { background-color: #333; }
+        .soop-icon { width: 18px; height: 18px; border-radius: 4px; }
+        .footer-credit { margin: 12px 0 0; font-size: 12px; color: #aaa; }
     </style>
 </head>
 <body>
@@ -173,6 +183,14 @@
             <div class="result-box" id="resultBox">
                 <strong style="display:block; margin-bottom:5px;">✅ 생성된 주소 (복사됨):</strong>
                 <span id="generatedUrl"></span>
+            </div>
+
+            <div class="footer-area">
+                <a class="soop-link-btn" href="https://www.sooplive.com/station/htvv2i" target="_blank" rel="noopener noreferrer">
+                    <img src="https://www.google.com/s2/favicons?domain=sooplive.com&sz=64" alt="SOOP" class="soop-icon">
+                    <span>숲 채널 바로가기</span>
+                </a>
+                <p class="footer-credit">Made by 햇비</p>
             </div>
         </div>
 
