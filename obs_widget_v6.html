@@ -58,6 +58,7 @@
         .nickname { font-size: 17px; font-weight: 800; color: #FFF; }
         .highlight-badge { background-color: #76c944; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
         .userid { font-size: 14px; color: #999; font-weight: 500; }
+        .content { font-size: 15px; color: #eee; font-weight: 500; }
         .post-date { font-size: 13px; color: #777; }
 
         .up-col { display: flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 900; color: #76c944; }
@@ -113,112 +114,176 @@
     </div>
 
     <script>
-// 1. 위젯 화면의 기본 정보(제목, 마감일) 세팅하기
+// 1. 위젯 화면의 기본 정보(제목, 마감일, QR) 세팅하기 - 실제 HTML의 id에 맞춤
 function setupWidgetUI(urlParams) {
     const title = urlParams.get('title');
     const deadline = urlParams.get('deadline');
+    const qrMode = urlParams.get('qr');
+    const qrText = urlParams.get('qrtext');
 
-    // 🚨 중요: 아래 "title-element", "deadline-element" 부분을
-    // 실제 HTML에 적혀있는 제목과 마감일 태그의 id 이름으로 꼭 바꿔주세요!
     if (title) {
-        const titleEl = document.getElementById("title-element"); 
+        const titleEl = document.getElementById("widget-title-display");
         if (titleEl) titleEl.innerText = title;
     }
-    
-    if (deadline) {
-        const deadlineEl = document.getElementById("deadline-element"); 
-        if (deadlineEl) deadlineEl.innerText = `마감일: ${deadline}`;
+
+    const deadlineEl = document.getElementById("deadline-display");
+    if (deadline && deadlineEl) {
+        deadlineEl.innerText = `마감일: ${deadline}`;
+        deadlineEl.style.display = "inline-block";
+    }
+
+    const qrSection = document.getElementById("qr-section");
+    const qrDesc = document.getElementById("qr-desc");
+    if (qrMode === 'on') {
+        if (qrSection) qrSection.style.display = "flex";
+        if (qrDesc && qrText) qrDesc.innerText = qrText;
     }
 }
 
 // 2. 서버에서 실시간 댓글 데이터 가져오기
 async function fetchRealComments() {
     const urlParams = new URLSearchParams(window.location.search);
-    
-    // 처음 한 번만 UI(제목, 마감일) 업데이트 실행
+
+    // 처음 한 번만 UI(제목, 마감일, QR) 업데이트 실행
     if (!window.uiSetupDone) {
         setupWidgetUI(urlParams);
         window.uiSetupDone = true;
     }
 
     const targetUrl = urlParams.get('url');
-    if (!targetUrl) return;
+    if (!targetUrl) {
+        console.warn("OBS 위젯: url 파라미터가 없습니다. 링크 생성기에서 다시 생성해주세요.");
+        return;
+    }
 
     // 링크에서 하이라이트할 댓글 번호 추출 (#comment_noti...)
     const match = targetUrl.match(/#comment_noti(\d+)/);
     const targetCommentId = match ? match[1] : null;
 
+    const cutoff = parseInt(urlParams.get('cutoff'), 10) || 0;
+    const mode = urlParams.get('mode') || 'top';
+
     try {
         const cleanUrl = targetUrl.split('#')[0];
         const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}`;
-        
-        const response = await fetch(apiUrl);
-        if (!response.ok) throw new Error("서버 통신 오류");
-        
-        const data = await response.json();
-        console.log("SOOP 원본 데이터:", data); // F12 콘솔창 확인용
 
-        renderComments(data, targetCommentId);
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error(`서버 통신 오류 (${response.status})`);
+
+        const data = await response.json();
+        console.log("SOOP 원본 데이터:", data); // F12 콘솔창에서 실제 필드명 확인용
+
+        renderComments(data, targetCommentId, cutoff, mode);
+
+        const updateEl = document.getElementById("update-time-display");
+        if (updateEl) {
+            const now = new Date();
+            updateEl.innerText = `업데이트: ${now.toLocaleTimeString('ko-KR')}`;
+        }
 
     } catch (error) {
         console.error("데이터 로드 실패:", error);
     }
 }
 
-// 3. 댓글 화면에 그리기
-function renderComments(data, targetCommentId) {
-    // 🚨 중요: "comment-list-container" 부분을 실제 HTML의 댓글 리스트 박스 id로 바꿔주세요!
-    const listContainer = document.getElementById("comment-list-container"); 
+// 3. 댓글 화면에 그리기 (실제 HTML의 #comment-list 에 맞춤)
+function renderComments(data, targetCommentId, cutoff, mode) {
+    const listContainer = document.getElementById("comment-list");
     if (!listContainer) return;
-    
+
     listContainer.innerHTML = ""; // 기존 내용 초기화
 
-    // SOOP 데이터 배열 경로 (만약 안 나오면 콘솔창 확인 후 data.list 등으로 변경)
-    const comments = data.data || data.comment_list || []; 
+    // SOOP 데이터 배열 경로 - 콘솔에 찍힌 원본 데이터 구조를 보고
+    // 아래 목록에 실제 경로가 없다면 추가/수정 해주세요.
+    const comments = data.data || data.comment_list || data.list || data.result || [];
+
+    if (!Array.isArray(comments) || comments.length === 0) {
+        listContainer.innerHTML = `<div style="color:#999; font-size:14px;">댓글이 없거나 데이터를 불러오지 못했습니다.</div>`;
+        return;
+    }
 
     let pinnedComment = null;
-    let otherComments = [];
+    let pinnedIndex = -1;
+    const otherComments = [];
 
-    comments.forEach(comment => {
-        // SOOP 댓글 번호 변수명 (comment_no 등)
-        const currentCommentId = String(comment.comment_no || comment.id || "");
-        
+    comments.forEach((comment, idx) => {
+        const currentCommentId = String(comment.comment_no || comment.id || comment.commentNo || "");
         if (targetCommentId && currentCommentId === targetCommentId) {
             pinnedComment = comment;
+            pinnedIndex = idx;
         } else {
             otherComments.push(comment);
         }
     });
 
-    // 고정 댓글 먼저 렌더링
-    if (pinnedComment) {
-        createCommentElement(listContainer, pinnedComment, "📌", "highlight-item");
+    // 표시할 댓글 목록 결정: 'top'(전체) vs 'around'(내 순위 주변만)
+    let visibleComments = otherComments.map((c, i) => ({ comment: c, rank: i + 1 }));
+    if (mode === 'around' && pinnedIndex >= 0) {
+        const windowSize = 3; // 내 순위 위/아래로 보여줄 개수
+        const centerRank = pinnedIndex + 1; // 대략적인 내 순위(핀 댓글 제외 전 기준)
+        visibleComments = visibleComments.filter(v => Math.abs(v.rank - centerRank) <= windowSize);
     }
 
-    // 나머지 일반 댓글 렌더링
-    otherComments.forEach((comment, index) => {
-        const rank = pinnedComment ? index + 2 : index + 1;
-        createCommentElement(listContainer, comment, rank, "normal-item");
+    // 고정 댓글 먼저 렌더링 (항상 최상단, 📌 표시)
+    if (pinnedComment) {
+        createCommentElement(listContainer, pinnedComment, "📌", "pinned-comment", true);
+    }
+
+    // 커트라인 표시 여부 추적
+    let cutoffLineDrawn = false;
+
+    visibleComments.forEach(({ comment, rank }) => {
+        if (cutoff > 0 && rank === cutoff + 1 && !cutoffLineDrawn) {
+            drawCutoffLine(listContainer, cutoff);
+            cutoffLineDrawn = true;
+        }
+        const isBelowCutoff = cutoff > 0 && rank > cutoff;
+        createCommentElement(listContainer, comment, rank, isBelowCutoff ? "grayed-out" : "", false);
     });
 }
 
-// 4. HTML 요소를 생성하는 함수
-function createCommentElement(container, comment, rankText, extraClass) {
-    // SOOP 데이터 변수명에 맞게 닉네임과 내용 추출
-    const nickname = comment.user_nickname || comment.user_id || "알 수 없음";
+function drawCutoffLine(container, cutoff) {
+    const line = document.createElement("div");
+    line.className = "cutoff-line";
+    line.innerHTML = `<span class="cutoff-text">${cutoff}위 컷</span>`;
+    container.appendChild(line);
+}
+
+// 4. HTML 요소를 생성하는 함수 (실제 CSS 클래스 구조에 맞춤)
+function createCommentElement(container, comment, rankText, extraClass, isPinned) {
+    // SOOP 응답의 실제 필드명은 F12 콘솔의 "SOOP 원본 데이터" 로그를 보고
+    // 아래 후보들 중 맞는 것을 확인/추가 해주세요.
+    const nickname = comment.user_nickname || comment.nick_name || comment.user_id || "알 수 없음";
+    const userId = comment.user_id || comment.user_nick || "";
     const content = comment.comment || comment.content || "내용 없음";
-    
-    const listItem = document.createElement("div");
-    listItem.className = `comment-item ${extraClass}`; 
-    
-    listItem.innerHTML = `
-        <div class="rank">${rankText}</div>
-        <div class="info">
-            <span class="nickname">${nickname}</span>
-            <span class="content">${content}</span>
+    const profileImg = comment.profile_image || comment.thumb_url || comment.profile_url || "";
+    const upCount = comment.up_cnt ?? comment.like_cnt ?? comment.good_cnt ?? comment.recommend_cnt ?? 0;
+    const regDate = comment.reg_date || comment.date || comment.created_at || "";
+
+    const box = document.createElement("div");
+    box.className = `comment-box ${extraClass}`;
+
+    box.innerHTML = `
+        <div class="rank-col">${rankText}</div>
+        ${profileImg ? `<img class="profile-pic" src="${profileImg}" alt="">` : `<div class="profile-pic"></div>`}
+        <div class="info-col">
+            <div class="nickname-wrapper">
+                <span class="nickname">${escapeHtml(nickname)}</span>
+                ${isPinned ? `<span class="pinned-badge">내 댓글</span>` : ""}
+            </div>
+            <span class="userid">${escapeHtml(userId)}</span>
+            <span class="content">${escapeHtml(content)}</span>
+            ${regDate ? `<span class="post-date">${escapeHtml(String(regDate))}</span>` : ""}
         </div>
+        <div class="up-col">👍 ${upCount}</div>
     `;
-    container.appendChild(listItem);
+    container.appendChild(box);
+}
+
+function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.innerText = String(str ?? "");
+    return div.innerHTML;
 }
 
 // 5초마다 새로고침
