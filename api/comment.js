@@ -21,7 +21,9 @@ export default async function handler(req, res) {
     // 입력 예시: https://www.sooplive.com/station/ecvhao/post/201137725
     // match[1] = ecvhao (채널명)
     // match[2] = 201137725 (게시물 번호)
-    const match = url.match(/\/station\/([a-zA-Z0-9_-]+)\/post\/(\d+)/);
+  const cleanUrl = url.split('#')[0]; // # 꼬리표 제거
+    const match = cleanUrl.match(/\/station\/([a-zA-Z0-9_-]+)\/post\/(\d+)/);
+    
     const channelId = match ? match[1] : null;
     const postId = match ? match[2] : null;
 
