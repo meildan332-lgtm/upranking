@@ -96,7 +96,7 @@
         /* 커트라인: 자체 높이를 가진 행으로 분리해서 위/아래 댓글에 절대 가려지지 않도록 함 */
         .cutoff-row {
             position: relative;
-            height: 26px;
+            height: 34px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -114,10 +114,10 @@
             z-index: 1;
             background: #FF1744;
             color: white;
-            font-size: 11px;
+            font-size: 16px;
             font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 10px;
+            padding: 4px 12px;
+            border-radius: 12px;
         }
 
         .grayed-out { filter: grayscale(100%); opacity: 0.5; }
@@ -181,12 +181,25 @@
     const DESIGN_HEIGHT = 1000;
     const stage = document.getElementById('scale-stage');
 
+    // 'zoom'을 지원하는 브라우저(OBS의 크로미움 기반 브라우저 소스, Chrome, Edge 등)에서는
+    // transform: scale() 대신 zoom을 사용함. transform: scale()은 이미 렌더링된 화면을
+    // 그대로 늘리기만 해서 글씨가 뭉개지는 반면, zoom은 지정한 배율 그대로 레이아웃을
+    // 다시 계산해서 그리기 때문에 화면을 축소해서 배치해도 글씨가 훨씬 선명하게 보임.
+    const supportsZoom = 'zoom' in document.documentElement.style;
+
     function applyScale() {
         if (!stage) return;
         const scaleX = window.innerWidth / DESIGN_WIDTH;
         const scaleY = window.innerHeight / DESIGN_HEIGHT;
         const scale = Math.min(scaleX, scaleY);
-        stage.style.transform = `scale(${scale})`;
+
+        if (supportsZoom) {
+            stage.style.transform = '';
+            stage.style.zoom = scale;
+        } else {
+            stage.style.zoom = '';
+            stage.style.transform = `scale(${scale})`;
+        }
     }
 
     window.addEventListener('resize', applyScale);
