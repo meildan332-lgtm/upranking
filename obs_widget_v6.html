@@ -365,11 +365,21 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
         commentStats.set('pinned', { rank: pinnedRank, upCount });
     }
 
+    // 커트라인 경계에서의 좋아요 차이 계산 (전체 순위 기준, 필터링된 목록과 무관하게 항상 정확)
+    let cutoffDiff = null;
+    if (cutoff > 0 && rankedComments.length > cutoff) {
+        const aboveComment = rankedComments[cutoff - 1];
+        const belowComment = rankedComments[cutoff];
+        const aboveUp = aboveComment.likeCnt ?? aboveComment.up_cnt ?? aboveComment.good_cnt ?? 0;
+        const belowUp = belowComment.likeCnt ?? belowComment.up_cnt ?? belowComment.good_cnt ?? 0;
+        cutoffDiff = aboveUp - belowUp;
+    }
+
     // 아래 랭킹 목록: 내 댓글도 실제 순위 자리에 함께 표시됨 (위 고정 카드와는 별개의 DOM으로 관리)
     let cutoffDrawn = false;
     visibleComments.forEach(({ comment, rank }) => {
         if (cutoff > 0 && rank === cutoff + 1 && !cutoffDrawn) {
-            rows.push({ key: 'cutoff-line', type: 'cutoff', cutoff });
+            rows.push({ key: 'cutoff-line', type: 'cutoff', diff: cutoffDiff });
             cutoffDrawn = true;
         }
         const isMine = comment === pinnedComment;
@@ -421,11 +431,13 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
         if (!el) {
             isNew = true;
             el = row.type === 'cutoff'
-                ? createCutoffElement(row.cutoff)
+                ? createCutoffElement(row.diff)
                 : createCommentElement(row.comment, row.rankText, row.extraClass, row.isPinned, row.rankDelta, row.upDelta);
             commentElements.set(row.key, el);
         } else if (row.type === 'comment') {
             updateCommentElement(el, row.comment, row.rankText, row.extraClass, row.isPinned, row.rankDelta, row.upDelta);
+        } else if (row.type === 'cutoff') {
+            updateCutoffElement(el, row.diff);
         }
 
         listContainer.appendChild(el); // 기존 노드면 위치만 이동
@@ -463,11 +475,22 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
     });
 }
 
-function createCutoffElement(cutoff) {
+function cutoffLabel(diff) {
+    if (diff === null || diff === undefined || Number.isNaN(diff)) return '컷 라인';
+    return `${Math.abs(diff)}개 차이`;
+}
+
+function createCutoffElement(diff) {
     const row = document.createElement("div");
     row.className = "cutoff-row";
-    row.innerHTML = `<span class="cutoff-text">${cutoff}위 컷</span>`;
+    row.innerHTML = `<span class="cutoff-text">${cutoffLabel(diff)}</span>`;
     return row;
+}
+
+function updateCutoffElement(el, diff) {
+    const span = el.querySelector('.cutoff-text');
+    const label = cutoffLabel(diff);
+    if (span && span.textContent !== label) span.textContent = label;
 }
 
 // 신규 댓글 엘리먼트 생성 (최초 1회만 실행, 이후엔 updateCommentElement로 내용만 갱신)
