@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS 위젯 링크 생성기 v4</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: 'Pretendard', sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        h2 { margin-top: 0; color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
+        input[type="text"], input[type="number"], input[type="date"], textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
+        textarea { resize: vertical; height: 80px; }
+        textarea::placeholder { color: #aaa; }
+        .radio-group { display: flex; gap: 15px; }
+        .radio-group label { font-weight: normal; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        .result-box { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 6px; display: none; word-break: break-all; }
+        .divider { height: 1px; background-color: #eee; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>⚙️ OBS 위젯 링크 생성기 v4</h2>
+        
+        <div class="form-group">
+            <label>컨텐츠 제목 (위젯 좌측 상단 표시)</label>
+            <input type="text" id="contentTitle" placeholder="예: 🔥 핫클립 랭킹" value="🔥 핫클립 랭킹">
+        </div>
+
+        <div class="form-group">
+            <label>내 댓글 링크 (고정할 대상)</label>
+            <input type="text" id="targetLink" placeholder="예: https://site.com/board/123#reply_456" value="https://site.com/board/123#reply_me">
+        </div>
+        
+        <div class="form-group">
+            <label>커트라인 순위 (이하 회색 처리)</label>
+            <input type="number" id="cutoff" placeholder="예: 4" value="4">
+        </div>
+        
+        <div class="form-group">
+            <label>마감 일자 (선택, 위젯 우측 상단 표시)</label>
+            <input type="date" id="deadline">
+        </div>
+        
+        <div class="form-group">
+            <label>댓글 표시 방식</label>
+            <div class="radio-group">
+                <label><input type="radio" name="mode" value="top" checked> 1위부터 모두 보기</label>
+                <label><input type="radio" name="mode" value="around"> 내 순위 주변만 보기</label>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+        
+        <!-- QR 코드 설정 영역 -->
+        <div class="form-group">
+            <label>QR 코드 표시</label>
+            <div class="radio-group">
+                <label><input type="radio" name="qrMode" value="on" checked onchange="toggleQrInputs()"> 켜기 (ON)</label>
+                <label><input type="radio" name="qrMode" value="off" onchange="toggleQrInputs()"> 끄기 (OFF)</label>
+            </div>
+        </div>
+
+        <div id="qrSettingsBox">
+            <div class="form-group">
+                <label>QR 코드 안내 문구</label>
+                <textarea id="qrText" placeholder="예: 📱 스마트폰으로 카메라를 켜서 스캔해보세요!&#10;로그인 후 따봉(👍)을 눌러 순위를 올려주세요."></textarea>
+            </div>
+        </div>
+        
+        <button onclick="generateLink()">위젯 주소 생성 및 복사</button>
+        
+        <div class="result-box" id="resultBox">
+            <strong style="display:block; margin-bottom:5px;">✅ 생성된 주소 (복사됨):</strong>
+            <span id="generatedUrl"></span>
+        </div>
+    </div>
+
+    <script>
+        function toggleQrInputs() {
+            const qrMode = document.querySelector('input[name="qrMode"]:checked').value;
+            const qrSettingsBox = document.getElementById('qrSettingsBox');
+            qrSettingsBox.style.display = qrMode === 'on' ? 'block' : 'none';
+        }
+
+        function generateLink() {
+            const contentTitle = document.getElementById('contentTitle').value || '🔥 핫클립 랭킹';
+            const link = document.getElementById('targetLink').value;
+            const cutoff = document.getElementById('cutoff').value;
+            const deadline = document.getElementById('deadline').value;
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+            const qrMode = document.querySelector('input[name="qrMode"]:checked').value;
+            const qrText = document.getElementById('qrText').value;
+            
+            const baseUrl = window.location.href.replace('link_generator_v4.html', 'obs_widget_v6.html');
+            
+            let finalUrl = `${baseUrl}?title=${encodeURIComponent(contentTitle)}&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}`;
+            
+            if (deadline) finalUrl += `&deadline=${deadline}`;
+            
+            if (qrMode === 'on' && qrText.trim() !== '') {
+                finalUrl += `&qrtext=${encodeURIComponent(qrText)}`;
+            } else if (qrMode === 'on' && qrText.trim() === '') {
+                finalUrl += `&qrtext=`;
+            }
+            
+            document.getElementById('generatedUrl').innerText = finalUrl;
+            document.getElementById('resultBox').style.display = 'block';
+            
+            navigator.clipboard.writeText(finalUrl).then(() => {
+                alert("OBS용 주소가 클립보드에 복사되었습니다! OBS 브라우저 소스에 붙여넣으세요.");
+            });
+        }
+    </script>
+</body>
+</html>

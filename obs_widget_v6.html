@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OBS 댓글 랭킹 위젯 v6</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+        body {
+            background-color: transparent !important;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+            font-family: 'Pretendard', sans-serif;
+            color: #ffffff;
+        }
+
+        #widget-container { width: 100%; max-width: 550px; display: flex; flex-direction: column; gap: 12px; }
+
+        /* 헤더 부분 좌우 정렬을 위한 flex 속성 */
+        .widget-header {
+            display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0px; text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
+        }
+        .widget-title { font-size: 24px; font-weight: 800; color: #FFD700; margin: 0; }
+        .deadline-text { font-size: 14px; color: #FF5252; font-weight: bold; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; }
+
+        .comment-box {
+            background-color: rgba(24, 24, 24, 0.95); 
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.4s ease-in-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .rank-col { width: 40px; font-size: 26px; font-weight: 900; text-align: center; margin-right: 15px; }
+        .profile-pic { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background-color: #444; margin-right: 15px; border: 1px solid #444; }
+        
+        .info-col { display: flex; flex-direction: column; justify-content: center; gap: 2px; flex: 1; }
+        .nickname-wrapper { display: flex; align-items: center; gap: 6px; }
+        .nickname { font-size: 17px; font-weight: 800; color: #FFF; }
+        .highlight-badge { background-color: #76c944; color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
+        .userid { font-size: 14px; color: #999; font-weight: 500; }
+        .post-date { font-size: 13px; color: #777; }
+
+        .up-col { display: flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 900; color: #76c944; }
+
+        .pinned-comment { border: 2px solid #00BFFF; background-color: rgba(10, 25, 40, 0.95); box-shadow: 0 0 15px rgba(0, 191, 255, 0.3); margin-bottom: 8px; }
+        .pinned-badge { background-color: #00BFFF; color: #fff; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
+
+        .cutoff-line { width: 100%; height: 2px; background-color: #FF1744; margin: 8px 0; box-shadow: 0 0 8px #FF1744; display: flex; justify-content: center; align-items: center; }
+        .cutoff-text { background: #FF1744; color: white; font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 10px; margin-top: -15px; }
+
+        .grayed-out { filter: grayscale(100%); opacity: 0.5; }
+        .grayed-out .rank-col { color: #777 !important; }
+        .grayed-out .up-col { color: #777; }
+
+        .qr-section {
+            display: none; 
+            align-items: center;
+            background-color: rgba(24, 24, 24, 0.85);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 12px 15px;
+            margin-top: 5px;
+            gap: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.4s ease-in-out forwards;
+            opacity: 0;
+            animation-delay: 0.5s;
+        }
+
+        .qr-image { width: 70px; height: 70px; background-color: white; padding: 4px; border-radius: 6px; }
+        .qr-text-col { display: flex; flex-direction: column; gap: 4px; }
+        .qr-desc { font-size: 15px; font-weight: 600; color: #ddd; line-height: 1.4; word-break: keep-all; white-space: pre-line; }
+        .update-time { text-align: right; font-size: 13px; color: #aaa; margin-top: 2px; font-weight: 500; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); }
+    </style>
+</head>
+<body>
+    <div id="widget-container">
+        <!-- 상단 헤더: 제목(좌) / 마감일자(우) -->
+        <div class="widget-header">
+            <h2 class="widget-title" id="widget-title-display">🔥 핫클립 랭킹</h2>
+            <div id="deadline-display" class="deadline-text" style="display: none;"></div>
+        </div>
+        <div id="comment-list"></div>
+        
+        <div class="qr-section" id="qr-section">
+            <img id="qr-code-img" class="qr-image" src="" alt="QR Code">
+            <div class="qr-text-col">
+                <div class="qr-desc" id="qr-desc"></div>
+            </div>
+        </div>
+
+        <div class="update-time" id="update-time-display"></div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // 새로 추가된 컨텐츠 제목 처리
+        const contentTitle = urlParams.get('title') || '🔥 핫클립 랭킹';
+        document.getElementById('widget-title-display').innerText = contentTitle;
+        
+        const targetUrl = urlParams.get('url') || 'https://site.com/board/123#reply_me';
+        const cutoffRank = parseInt(urlParams.get('cutoff')) || 4;
+        const mode = urlParams.get('mode') || 'top';
+        const deadline = urlParams.get('deadline');
+        const qrMode = urlParams.get('qr') || 'on';
+        const qrText = urlParams.get('qrtext') || '📱 스마트폰으로 카메라를 켜서 스캔해보세요!\n로그인 후 따봉(👍)을 눌러 순위를 올려주세요.';
+
+        // 마감일자 처리 (설정 시 우측에 표시)
+        if (deadline) {
+            const dlEl = document.getElementById('deadline-display');
+            dlEl.style.display = 'block';
+            dlEl.innerText = `마감: ${deadline}`;
+        }
+
+        if (qrMode === 'on') {
+            const qrSection = document.getElementById('qr-section');
+            const qrImgEl = document.getElementById('qr-code-img');
+            const qrDescEl = document.getElementById('qr-desc');
+            
+            qrImgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(targetUrl)}`;
+            qrDescEl.innerText = qrText; 
+            
+            qrSection.style.display = 'flex'; 
+        }
+
+        function getRankColor(rank) {
+            if (rank === 1) return '#F5A623';
+            if (rank === 2) return '#9E9E9E';
+            if (rank === 3) return '#B06A3B';
+            return '#76C944';
+        }
+
+        function createCommentHTML(comment, isPinned = false, isGray = false, delayIndex = 0) {
+            let classes = ['comment-box'];
+            if (isPinned) classes.push('pinned-comment');
+            if (isGray && !isPinned) classes.push('grayed-out'); 
+
+            let rankColor = getRankColor(comment.rank);
+            if (isGray && !isPinned) rankColor = '#777'; 
+
+            const pinnedBadge = isPinned ? `<span class="pinned-badge">내 링크</span>` : '';
+            const highlightBadge = comment.isHighlight ? `<span class="highlight-badge">하이라이트</span>` : '';
+            const formattedLikes = comment.likes.toLocaleString();
+
+            return `
+                <div class="${classes.join(' ')}" style="animation-delay: ${delayIndex * 0.08}s">
+                    <div class="rank-col" style="color: ${rankColor};">${comment.rank}</div>
+                    <img src="${comment.profilePic}" alt="프로필" class="profile-pic">
+                    <div class="info-col">
+                        <div class="nickname-wrapper">${pinnedBadge}<span class="nickname">${comment.author}</span>${highlightBadge}</div>
+                        <div class="userid">${comment.userid}</div>
+                        <div class="post-date">${comment.postDate}</div>
+                    </div>
+                    <div class="up-col">👍 ${formattedLikes}</div>
+                </div>
+            `;
+        }
+
+        function renderComments(allComments) {
+            const listContainer = document.getElementById('comment-list');
+            listContainer.innerHTML = ''; 
+
+            const myComment = allComments.find(c => c.link === targetUrl) || allComments[3];
+            let renderList = mode === 'around' && myComment 
+                ? allComments.slice(Math.max(0, allComments.indexOf(myComment) - 2), Math.min(allComments.length, allComments.indexOf(myComment) + 3))
+                : allComments.slice(0, 10);
+
+            let delayCount = 0;
+
+            if (myComment) {
+                listContainer.innerHTML += createCommentHTML(myComment, true, myComment.rank > cutoffRank, delayCount++);
+            }
+
+            let previousRank = 0;
+            renderList.forEach((comment) => {
+                if (comment.link === myComment?.link) return;
+                if (previousRank <= cutoffRank && comment.rank > cutoffRank) {
+                    listContainer.innerHTML += `
+                        <div class="cutoff-line" style="animation-delay: ${delayCount * 0.08}s">
+                            <span class="cutoff-text">CUTOFF (상위 ${cutoffRank}명)</span>
+                        </div>
+                    `;
+                }
+                listContainer.innerHTML += createCommentHTML(comment, false, comment.rank > cutoffRank, delayCount++);
+                previousRank = comment.rank;
+            });
+
+            const now = new Date();
+            const timeString = now.toLocaleString('ko-KR', { 
+                year: 'numeric', month: 'numeric', day: 'numeric', 
+                hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true 
+            });
+            document.getElementById('update-time-display').innerText = `실시간 업데이트: ${timeString}`;
+        }
+
+        function fetchComments() {
+            const dummyData = [
+                { rank: 1, author: "양도끼", userid: "@yangdoki", postDate: "2026-07-20 22:42:43", likes: 2151, profilePic: "https://ui-avatars.com/api/?name=양&background=0D8ABC&color=fff", isHighlight: false, link: "url_1" },
+                { rank: 2, author: "머독", userid: "@spbabobj", postDate: "2026-07-20 21:49:26", likes: 2140, profilePic: "https://ui-avatars.com/api/?name=머&background=222&color=fff", isHighlight: false, link: "url_2" },
+                { rank: 3, author: "하치_HACHI", userid: "@hachi97", postDate: "2026-07-20 21:42:17", likes: 1751, profilePic: "https://ui-avatars.com/api/?name=하&background=444&color=fff", isHighlight: false, link: "url_3" },
+                { rank: 4, author: "구슬요", userid: "@beadyo97", postDate: "2026-07-20 17:05:18", likes: 1664, profilePic: "https://ui-avatars.com/api/?name=구&background=76c944&color=fff", isHighlight: true, link: "https://site.com/board/123#reply_me" },
+                { rank: 5, author: "최또", userid: "@choiagain", postDate: "2026-07-20 17:25:30", likes: 1541, profilePic: "https://ui-avatars.com/api/?name=최&background=222&color=fff", isHighlight: false, link: "url_5" },
+                { rank: 6, author: "참가자6", userid: "@player6", postDate: "2026-07-20 16:10:00", likes: 1420, profilePic: "https://ui-avatars.com/api/?name=6&background=666&color=fff", isHighlight: false, link: "url_6" }
+            ];
+            renderComments(dummyData);
+        }
+
+        fetchComments();
+        setInterval(fetchComments, 30000);
+    </script>
+</body>
+</html>
