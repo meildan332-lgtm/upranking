@@ -25,6 +25,28 @@
         .divider { height: 1px; background-color: #eee; margin: 20px 0; }
         .size-hint { font-size: 13px; color: #777; text-align: center; margin: 14px 0 0; }
 
+        .tooltip-wrap { position: relative; display: block; text-align: center; margin: 12px 0 0; }
+        .tooltip-trigger { font-size: 13px; color: #555; cursor: help; border-bottom: 1px dashed #999; padding-bottom: 1px; }
+        .tooltip-box {
+            display: none;
+            position: absolute;
+            bottom: 130%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 280px;
+            max-width: 80vw;
+            background: #333;
+            color: #fff;
+            font-size: 12px;
+            line-height: 1.6;
+            padding: 12px 14px;
+            border-radius: 8px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+            z-index: 20;
+            text-align: left;
+        }
+        .tooltip-wrap:hover .tooltip-box { display: block; }
+
         .preview-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; box-sizing: border-box; display: none; }
         .preview-panel h3 { margin-top: 0; margin-bottom: 12px; color: #333; font-size: 16px; }
         .preview-frame-wrap { background: #1b1b1b; border-radius: 8px; padding: 10px; overflow: auto; }
@@ -43,12 +65,12 @@
             </div>
 
             <div class="form-group">
-                <label>내 댓글 링크 (고정할 대상)</label>
+                <label>내 댓글 링크</label>
                 <input type="text" id="targetLink">
             </div>
 
             <div class="form-group">
-                <label>커트라인 순위 (이하 회색 처리)</label>
+                <label>커트라인 순위</label>
                 <input type="number" id="cutoff">
             </div>
 
@@ -92,12 +114,12 @@
 
             <div id="qrSettingsBox">
                 <div class="form-group">
-                    <label>QR 코드 크기 (댓글 카드 가로폭 기준)</label>
+                    <label>QR 코드 크기</label>
                     <select id="qrSize">
                         <option value="100">100%</option>
                         <option value="75">75%</option>
                         <option value="50" selected>50%</option>
-                        <option value="25">25%</option>
+                        <option value="25">25% (인식 잘 안될 수 있음)</option>
                     </select>
                 </div>
 
@@ -118,7 +140,14 @@
                 </div>
             </div>
 
-            <p class="size-hint">💡 OBS 브라우저 소스 권장 사이즈: 너비 500 / 높이 1000<br>(다른 사이즈를 넣어도 비율에 맞게 자동으로 축소/확대됩니다)<br><br>🔎 글씨가 흐릿하게 보인다면? OBS는 브라우저 소스에 <b>설정한 해상도 그대로</b>만 렌더링한 뒤 화면에서 늘려서 보여주기 때문에, 실제로 화면에 보이는 크기보다 소스 해상도가 작으면 확대되면서 흐려집니다.<br>→ 브라우저 소스 속성에서 너비/높이를 <b>실제 화면에 보일 크기의 2배</b>(예: 1000×2000)로 설정한 다음, 소스 자체를 씬에서 원하는 크기로 <b>줄여서</b> 배치해보세요. 더 선명하게 보입니다.</p>
+            <p class="size-hint">💡 OBS 브라우저 소스 권장 사이즈: 너비 1000 / 높이 2200<br>(다른 사이즈를 넣어도 비율에 맞게 자동으로 축소/확대됩니다)</p>
+
+            <div class="tooltip-wrap">
+                <span class="tooltip-trigger">🔎 글씨가 흐릿하게 보인다면?</span>
+                <div class="tooltip-box">
+                    OBS는 브라우저 소스에 설정한 해상도 그대로만 렌더링한 뒤 화면에서 늘려서 보여주기 때문에, 실제로 화면에 보이는 크기보다 소스 해상도가 작으면 확대되면서 흐려집니다.<br><br>→ 브라우저 소스 속성에서 너비/높이를 실제 화면에 보일 크기의 2배(예: 1000×2000)로 설정한 다음, 소스 자체를 씬에서 원하는 크기로 줄여서 배치해보세요. 더 선명하게 보입니다.
+                </div>
+            </div>
 
             <button onclick="generateLink()">위젯 주소 생성 및 복사</button>
 
