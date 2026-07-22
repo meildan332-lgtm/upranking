@@ -345,7 +345,9 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
     }
 
     let visibleComments = rankedComments.map((c, i) => ({ comment: c, rank: i + 1 }));
-    if (mode === 'around' && pinnedComment) {
+    if (mode === 'mine') {
+        visibleComments = [];
+    } else if (mode === 'around' && pinnedComment) {
         const upCount = Number.isFinite(aroundUp) && aroundUp >= 0 ? aroundUp : 3;
         const downCount = Number.isFinite(aroundDown) && aroundDown >= 0 ? aroundDown : 3;
         const centerRank = pinnedRank;

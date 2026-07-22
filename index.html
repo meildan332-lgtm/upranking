@@ -15,7 +15,7 @@
         input[type="text"], input[type="number"], input[type="date"], textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
         textarea { resize: vertical; height: 80px; }
         textarea::placeholder { color: #aaa; }
-        .radio-group { display: flex; gap: 15px; }
+        .radio-group { display: flex; gap: 15px; flex-wrap: wrap; }
         .radio-group label { font-weight: normal; display: flex; align-items: center; gap: 5px; cursor: pointer; }
         .range-row { display: flex; gap: 10px; }
         .range-row .form-group { flex: 1; margin-bottom: 0; }
@@ -62,6 +62,7 @@
                 <div class="radio-group">
                     <label><input type="radio" name="mode" value="top" checked onchange="toggleModeInputs()"> 1위부터 모두 보기</label>
                     <label><input type="radio" name="mode" value="around" onchange="toggleModeInputs()"> 내 순위 주변만 보기</label>
+                    <label><input type="radio" name="mode" value="mine" onchange="toggleModeInputs()"> 내 순위만 보기</label>
                 </div>
             </div>
 
