@@ -28,17 +28,17 @@
         
         <div class="form-group">
             <label>컨텐츠 제목 (위젯 좌측 상단 표시)</label>
-            <input type="text" id="contentTitle" placeholder="예: 🔥 핫클립 랭킹" value="🔥 핫클립 랭킹">
+            <input type="text" id="contentTitle">
         </div>
 
         <div class="form-group">
             <label>내 댓글 링크 (고정할 대상)</label>
-            <input type="text" id="targetLink" placeholder="예: https://site.com/board/123#reply_456" value="https://site.com/board/123#reply_me">
+            <input type="text" id="targetLink">
         </div>
         
         <div class="form-group">
             <label>커트라인 순위 (이하 회색 처리)</label>
-            <input type="number" id="cutoff" placeholder="예: 4" value="4">
+            <input type="number" id="cutoff">
         </div>
         
         <div class="form-group">
@@ -88,7 +88,7 @@
         }
 
         function generateLink() {
-            const contentTitle = document.getElementById('contentTitle').value || '🔥 핫클립 랭킹';
+            const contentTitle = document.getElementById('contentTitle').value;
             const link = document.getElementById('targetLink').value;
             const cutoff = document.getElementById('cutoff').value;
             const deadline = document.getElementById('deadline').value;
