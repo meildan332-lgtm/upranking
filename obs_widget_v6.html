@@ -272,30 +272,25 @@ function renderComments(data, targetCommentId, cutoff, mode) {
     }
 
     let pinnedComment = null;
-    let pinnedIndex = -1;
-    const otherComments = [];
 
-    comments.forEach((comment, idx) => {
+    comments.forEach((comment) => {
         const currentCommentId = String(comment.pCommentNo || comment.comment_no || comment.id || "");
         const isFlaggedHighlight = comment.isHighlight === true;
-        if ((targetCommentId && currentCommentId === targetCommentId) || (!targetCommentId && isFlaggedHighlight && !pinnedComment)) {
+        if (!pinnedComment && ((targetCommentId && currentCommentId === targetCommentId) || (!targetCommentId && isFlaggedHighlight))) {
             pinnedComment = comment;
-            pinnedIndex = idx;
-        } else {
-            otherComments.push(comment);
         }
     });
 
-    // 추천수(좋아요) 기준 내림차순 정렬 → 진짜 "랭킹"
-    otherComments.sort((a, b) => (b.likeCnt ?? 0) - (a.likeCnt ?? 0));
+    // 추천수(좋아요) 기준 내림차순 정렬. 내 댓글도 여기 포함시켜서 아래 목록에도 실제 순위 자리에 나오게 함
+    const rankedComments = [...comments].sort((a, b) => (b.likeCnt ?? 0) - (a.likeCnt ?? 0));
 
-    // 고정 댓글의 실제 순위 계산 (추천수 기준으로 자신보다 위인 댓글 수 + 1)
+    // 고정 댓글의 실제 순위 (정렬된 전체 목록 내 위치)
     let pinnedRank = null;
     if (pinnedComment) {
-        pinnedRank = otherComments.filter(c => (c.likeCnt ?? 0) > (pinnedComment.likeCnt ?? 0)).length + 1;
+        pinnedRank = rankedComments.indexOf(pinnedComment) + 1;
     }
 
-    let visibleComments = otherComments.map((c, i) => ({ comment: c, rank: i + 1 }));
+    let visibleComments = rankedComments.map((c, i) => ({ comment: c, rank: i + 1 }));
     if (mode === 'around' && pinnedComment) {
         const windowSize = 3;
         const centerRank = pinnedRank;
@@ -304,6 +299,8 @@ function renderComments(data, targetCommentId, cutoff, mode) {
 
     // 이번 새로고침에서 보여야 할 행(row) 순서 계산
     const rows = [];
+
+    // 상단 고정 카드 (항상 맨 위, 파란 테두리로 강조)
     if (pinnedComment) {
         const upCount = pinnedComment.likeCnt ?? pinnedComment.up_cnt ?? pinnedComment.good_cnt ?? 0;
         const prevStats = commentStats.get('pinned');
@@ -313,25 +310,28 @@ function renderComments(data, targetCommentId, cutoff, mode) {
         commentStats.set('pinned', { rank: pinnedRank, upCount });
     }
 
+    // 아래 랭킹 목록: 내 댓글도 실제 순위 자리에 함께 표시됨 (위 고정 카드와는 별개의 DOM으로 관리)
     let cutoffDrawn = false;
     visibleComments.forEach(({ comment, rank }) => {
         if (cutoff > 0 && rank === cutoff + 1 && !cutoffDrawn) {
             rows.push({ key: 'cutoff-line', type: 'cutoff', cutoff });
             cutoffDrawn = true;
         }
+        const isMine = comment === pinnedComment;
         const isBelowCutoff = cutoff > 0 && rank > cutoff;
-        const key = getCommentKey(comment, rank);
+        const key = 'list:' + getCommentKey(comment, rank);
         const upCount = comment.likeCnt ?? comment.up_cnt ?? comment.good_cnt ?? 0;
         const prevStats = commentStats.get(key);
         const rankDelta = prevStats ? prevStats.rank - rank : 0;
         const upDelta = prevStats ? upCount - prevStats.upCount : 0;
+        const classNames = [isBelowCutoff ? 'grayed-out' : '', isMine ? 'pinned-comment' : ''].filter(Boolean).join(' ');
         rows.push({
             key,
             type: 'comment',
             comment,
             rankText: rank,
-            extraClass: isBelowCutoff ? 'grayed-out' : '',
-            isPinned: false,
+            extraClass: classNames,
+            isPinned: isMine,
             rankDelta,
             upDelta
         });
