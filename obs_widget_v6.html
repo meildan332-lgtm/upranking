@@ -105,121 +105,72 @@
     </div>
 
     <script>
-        const urlParams = new URLSearchParams(window.location.search);
+// 1. Vercel 서버에서 진짜 데이터를 가져오는 함수
+async function fetchRealComments() {
+    // 위젯 주소에 붙어있는 '?url=게시글주소' 에서 URL 파라미터 뽑아내기
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetUrl = urlParams.get('url');
+
+    // URL이 없으면 작동 중지
+    if (!targetUrl) {
+        console.error("연결된 게시글 주소가 없습니다.");
+        return;
+    }
+
+    try {
+        // 우리가 만든 Vercel 서버로 요청 보내기 (같은 도메인이므로 /api/comment 로 바로 호출)
+        const apiUrl = `/api/comment?url=${encodeURIComponent(targetUrl)}`;
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+            throw new Error("서버 통신 오류");
+        }
+
+        // SOOP 서버에서 가져온 진짜 JSON 데이터
+        const data = await response.json();
         
-        // 새로 추가된 컨텐츠 제목 처리
-        const contentTitle = urlParams.get('title') || '🔥 핫클립 랭킹';
-        document.getElementById('widget-title-display').innerText = contentTitle;
+        // 데이터 구조 확인을 위해 콘솔에 출력 (F12 눌러서 확인 가능)
+        console.log("가져온 데이터:", data);
+
+        // 2. 화면에 데이터 그리기 함수 호출
+        renderComments(data);
+
+    } catch (error) {
+        console.error("데이터를 불러오지 못했습니다:", error);
+    }
+}
+
+// 3. 받아온 데이터를 바탕으로 HTML 화면을 업데이트하는 함수
+function renderComments(data) {
+    const listContainer = document.getElementById("여기에_댓글리스트_ID입력");
+    listContainer.innerHTML = ""; // 기존 가짜 데이터 싹 지우기
+
+    // 🚨 중요: SOOP API의 실제 데이터 구조에 맞춰서 배열을 찾아야 합니다.
+    // 예: data.data, data.comment_list, data.list 등 (콘솔창 확인 필요)
+    const comments = data.data || []; 
+
+    comments.forEach((comment, index) => {
+        // SOOP API의 실제 변수명에 맞춰서 수정이 필요할 수 있습니다.
+        // 예: comment.user_nickname, comment.content 등
+        const nickname = comment.user_id || "알 수 없음";
+        const content = comment.comment || "내용 없음";
         
-        const targetUrl = urlParams.get('url') || 'https://site.com/board/123#reply_me';
-        const cutoffRank = parseInt(urlParams.get('cutoff')) || 4;
-        const mode = urlParams.get('mode') || 'top';
-        const deadline = urlParams.get('deadline');
-        const qrMode = urlParams.get('qr') || 'on';
-        const qrText = urlParams.get('qrtext') || '📱 스마트폰으로 카메라를 켜서 스캔해보세요!\n로그인 후 따봉(👍)을 눌러 순위를 올려주세요.';
+        const listItem = document.createElement("div");
+        listItem.className = "comment-item"; // 기존 디자인 클래스 유지
+        
+        listItem.innerHTML = `
+            <div class="rank">${index + 1}</div>
+            <div class="info">
+                <span class="nickname">${nickname}</span>
+                <span class="content">${content}</span>
+            </div>
+        `;
+        listContainer.appendChild(listItem);
+    });
+}
 
-        // 마감일자 처리 (설정 시 우측에 표시)
-        if (deadline) {
-            const dlEl = document.getElementById('deadline-display');
-            dlEl.style.display = 'block';
-            dlEl.innerText = `마감: ${deadline}`;
-        }
-
-        if (qrMode === 'on') {
-            const qrSection = document.getElementById('qr-section');
-            const qrImgEl = document.getElementById('qr-code-img');
-            const qrDescEl = document.getElementById('qr-desc');
-            
-            qrImgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(targetUrl)}`;
-            qrDescEl.innerText = qrText; 
-            
-            qrSection.style.display = 'flex'; 
-        }
-
-        function getRankColor(rank) {
-            if (rank === 1) return '#F5A623';
-            if (rank === 2) return '#9E9E9E';
-            if (rank === 3) return '#B06A3B';
-            return '#76C944';
-        }
-
-        function createCommentHTML(comment, isPinned = false, isGray = false, delayIndex = 0) {
-            let classes = ['comment-box'];
-            if (isPinned) classes.push('pinned-comment');
-            if (isGray && !isPinned) classes.push('grayed-out'); 
-
-            let rankColor = getRankColor(comment.rank);
-            if (isGray && !isPinned) rankColor = '#777'; 
-
-            const pinnedBadge = isPinned ? `<span class="pinned-badge">내 링크</span>` : '';
-            const highlightBadge = comment.isHighlight ? `<span class="highlight-badge">하이라이트</span>` : '';
-            const formattedLikes = comment.likes.toLocaleString();
-
-            return `
-                <div class="${classes.join(' ')}" style="animation-delay: ${delayIndex * 0.08}s">
-                    <div class="rank-col" style="color: ${rankColor};">${comment.rank}</div>
-                    <img src="${comment.profilePic}" alt="프로필" class="profile-pic">
-                    <div class="info-col">
-                        <div class="nickname-wrapper">${pinnedBadge}<span class="nickname">${comment.author}</span>${highlightBadge}</div>
-                        <div class="userid">${comment.userid}</div>
-                        <div class="post-date">${comment.postDate}</div>
-                    </div>
-                    <div class="up-col">👍 ${formattedLikes}</div>
-                </div>
-            `;
-        }
-
-        function renderComments(allComments) {
-            const listContainer = document.getElementById('comment-list');
-            listContainer.innerHTML = ''; 
-
-            const myComment = allComments.find(c => c.link === targetUrl) || allComments[3];
-            let renderList = mode === 'around' && myComment 
-                ? allComments.slice(Math.max(0, allComments.indexOf(myComment) - 2), Math.min(allComments.length, allComments.indexOf(myComment) + 3))
-                : allComments.slice(0, 10);
-
-            let delayCount = 0;
-
-            if (myComment) {
-                listContainer.innerHTML += createCommentHTML(myComment, true, myComment.rank > cutoffRank, delayCount++);
-            }
-
-            let previousRank = 0;
-            renderList.forEach((comment) => {
-                if (comment.link === myComment?.link) return;
-                if (previousRank <= cutoffRank && comment.rank > cutoffRank) {
-                    listContainer.innerHTML += `
-                        <div class="cutoff-line" style="animation-delay: ${delayCount * 0.08}s">
-                            <span class="cutoff-text">CUTOFF (상위 ${cutoffRank}명)</span>
-                        </div>
-                    `;
-                }
-                listContainer.innerHTML += createCommentHTML(comment, false, comment.rank > cutoffRank, delayCount++);
-                previousRank = comment.rank;
-            });
-
-            const now = new Date();
-            const timeString = now.toLocaleString('ko-KR', { 
-                year: 'numeric', month: 'numeric', day: 'numeric', 
-                hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true 
-            });
-            document.getElementById('update-time-display').innerText = `실시간 업데이트: ${timeString}`;
-        }
-
-        function fetchComments() {
-            const dummyData = [
-                { rank: 1, author: "양도끼", userid: "@yangdoki", postDate: "2026-07-20 22:42:43", likes: 2151, profilePic: "https://ui-avatars.com/api/?name=양&background=0D8ABC&color=fff", isHighlight: false, link: "url_1" },
-                { rank: 2, author: "머독", userid: "@spbabobj", postDate: "2026-07-20 21:49:26", likes: 2140, profilePic: "https://ui-avatars.com/api/?name=머&background=222&color=fff", isHighlight: false, link: "url_2" },
-                { rank: 3, author: "하치_HACHI", userid: "@hachi97", postDate: "2026-07-20 21:42:17", likes: 1751, profilePic: "https://ui-avatars.com/api/?name=하&background=444&color=fff", isHighlight: false, link: "url_3" },
-                { rank: 4, author: "구슬요", userid: "@beadyo97", postDate: "2026-07-20 17:05:18", likes: 1664, profilePic: "https://ui-avatars.com/api/?name=구&background=76c944&color=fff", isHighlight: true, link: "https://site.com/board/123#reply_me" },
-                { rank: 5, author: "최또", userid: "@choiagain", postDate: "2026-07-20 17:25:30", likes: 1541, profilePic: "https://ui-avatars.com/api/?name=최&background=222&color=fff", isHighlight: false, link: "url_5" },
-                { rank: 6, author: "참가자6", userid: "@player6", postDate: "2026-07-20 16:10:00", likes: 1420, profilePic: "https://ui-avatars.com/api/?name=6&background=666&color=fff", isHighlight: false, link: "url_6" }
-            ];
-            renderComments(dummyData);
-        }
-
-        fetchComments();
-        setInterval(fetchComments, 30000);
-    </script>
+// 4. 5초마다 실시간으로 새로운 데이터를 가져와서 새로고침 (Vercel 캐싱 주기와 동일)
+setInterval(fetchRealComments, 5000);
+fetchRealComments(); // 켜자마자 바로 1번 실행    </script>
 </body>
 </html>
