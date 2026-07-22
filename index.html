@@ -65,6 +65,18 @@
             </div>
 
             <div class="form-group">
+                <label>글꼴</label>
+                <select id="fontSelect">
+                    <option value="pretendard" selected>프리텐다드 (기본)</option>
+                    <option value="noto">노토 산스 KR</option>
+                    <option value="blackhan">블랙 한 산스 (임팩트)</option>
+                    <option value="dohyeon">도현체</option>
+                    <option value="jua">주아체 (귀여운)</option>
+                    <option value="gaegu">개구체 (손글씨)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label>내 댓글 링크</label>
                 <input type="text" id="targetLink">
             </div>
@@ -77,6 +89,14 @@
             <div class="form-group">
                 <label>마감 일자 (선택)</label>
                 <input type="date" id="deadline">
+            </div>
+
+            <div class="form-group">
+                <label>내 댓글 상단 고정</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="pinMode" value="on" checked> 켜기 (맨 위에 항상 고정)</label>
+                    <label><input type="radio" name="pinMode" value="off"> 끄기 (순위 자리에만 표시)</label>
+                </div>
             </div>
 
             <div class="form-group">
@@ -181,9 +201,11 @@
 
         function buildWidgetUrl() {
             const contentTitle = document.getElementById('contentTitle').value;
+            const font = document.getElementById('fontSelect').value;
             const link = document.getElementById('targetLink').value;
             const cutoff = document.getElementById('cutoff').value;
             const deadline = document.getElementById('deadline').value;
+            const pinMode = document.querySelector('input[name="pinMode"]:checked').value;
             const mode = document.querySelector('input[name="mode"]:checked').value;
             const qrMode = document.querySelector('input[name="qrMode"]:checked').value;
             const qrText = document.getElementById('qrText').value;
@@ -195,7 +217,7 @@
 
             const baseUrl = window.location.origin + '/obs_widget_v6.html';
 
-            let finalUrl = `${baseUrl}?title=${encodeURIComponent(contentTitle)}&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}`;
+            let finalUrl = `${baseUrl}?title=${encodeURIComponent(contentTitle)}&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}`;
 
             if (mode === 'around') {
                 finalUrl += `&aroundUp=${encodeURIComponent(aroundUp || '3')}&aroundDown=${encodeURIComponent(aroundDown || '3')}`;

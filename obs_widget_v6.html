@@ -92,7 +92,6 @@
         .delta-down { color: #FF5252; }
 
         .pinned-comment { border: 2px solid #00BFFF; background-color: rgba(10, 25, 40, 0.95); box-shadow: 0 0 15px rgba(0, 191, 255, 0.3); }
-        .pinned-badge { background-color: #00BFFF; color: #fff; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
 
         /* 커트라인: 자체 높이를 가진 행으로 분리해서 위/아래 댓글에 절대 가려지지 않도록 함 */
         .cutoff-row {
@@ -216,15 +215,40 @@ function upDeltaMarkup(delta) {
     return `<span class="delta-badge delta-down">${delta}</span>`;
 }
 
+// 글꼴 프리셋 (id -> 구글 폰트 스타일시트 주소 + CSS font-family 값)
+const FONT_PRESETS = {
+    pretendard: { css: null, family: "'Pretendard', sans-serif" },
+    noto:       { css: 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap', family: "'Noto Sans KR', sans-serif" },
+    blackhan:   { css: 'https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap', family: "'Black Han Sans', sans-serif" },
+    dohyeon:    { css: 'https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap', family: "'Do Hyeon', sans-serif" },
+    jua:        { css: 'https://fonts.googleapis.com/css2?family=Jua&display=swap', family: "'Jua', sans-serif" },
+    gaegu:      { css: 'https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap', family: "'Gaegu', sans-serif" }
+};
+
+function applyFontPreset(fontId) {
+    const preset = FONT_PRESETS[fontId] || FONT_PRESETS.pretendard;
+    if (preset.css && !document.querySelector(`link[data-font-id="${fontId}"]`)) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = preset.css;
+        link.setAttribute('data-font-id', fontId);
+        document.head.appendChild(link);
+    }
+    document.body.style.fontFamily = preset.family;
+}
+
 // 1. 위젯 화면의 기본 정보(제목, 마감일, QR) 세팅하기
 function setupWidgetUI(urlParams) {
     const title = urlParams.get('title');
     const deadline = urlParams.get('deadline');
+    const font = urlParams.get('font') || 'pretendard';
     const qrMode = urlParams.get('qr');
     const qrText = urlParams.get('qrtext');
     const qrSize = urlParams.get('qrsize') || '50';
     const qrFontSize = urlParams.get('qrFontSize') || '15';
     const qrFontColor = urlParams.get('qrFontColor') || '#dddddd';
+
+    applyFontPreset(font);
 
     if (title !== null) {
         const titleEl = document.getElementById("widget-title-display");
@@ -294,6 +318,7 @@ async function fetchRealComments() {
 
     const cutoff = parseInt(urlParams.get('cutoff'), 10) || 0;
     const mode = urlParams.get('mode') || 'top';
+    const pinEnabled = urlParams.get('pin') !== 'off';
     const aroundUp = parseInt(urlParams.get('aroundUp'), 10);
     const aroundDown = parseInt(urlParams.get('aroundDown'), 10);
 
@@ -308,7 +333,7 @@ async function fetchRealComments() {
         const data = await response.json();
         console.log("SOOP 원본 데이터:", data);
 
-        renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown);
+        renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown, pinEnabled);
 
         const updateEl = document.getElementById("update-time-display");
         if (updateEl) {
@@ -330,7 +355,7 @@ function getCommentKey(comment, fallbackIndex) {
 }
 
 // 3. 댓글 목록 업데이트 (지우고 다시 그리는 대신, 기존 엘리먼트 재사용 + 순서만 이동)
-function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown) {
+function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown, pinEnabled) {
     const listContainer = document.getElementById("comment-list");
     if (!listContainer) return;
 
@@ -379,8 +404,9 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
     // 이번 새로고침에서 보여야 할 행(row) 순서 계산
     const rows = [];
 
-    // 상단 고정 카드 (항상 맨 위, 파란 테두리로 강조)
-    if (pinnedComment) {
+    // 상단 고정 카드 (켜기 상태이거나, "내 순위만 보기" 모드일 때만 표시)
+    const showPinnedCard = pinnedComment && (pinEnabled || mode === 'mine');
+    if (showPinnedCard) {
         const upCount = pinnedComment.likeCnt ?? pinnedComment.up_cnt ?? pinnedComment.good_cnt ?? 0;
         const prevStats = commentStats.get('pinned');
         const rankDelta = prevStats ? prevStats.rank - pinnedRank : 0;
@@ -536,7 +562,6 @@ function createCommentElement(comment, rankText, extraClass, isPinned, rankDelta
         <div class="info-col">
             <div class="nickname-wrapper">
                 <span class="nickname">${escapeHtml(nickname)}</span>
-                ${isPinned ? `<span class="pinned-badge">내 댓글</span>` : ""}
             </div>
             <span class="userid">${escapeHtml(userId)}</span>
         </div>
@@ -575,17 +600,6 @@ function updateCommentElement(el, comment, rankText, extraClass, isPinned, rankD
     const img = el.querySelector('.profile-pic');
     if (img && img.tagName === 'IMG' && profileImg && img.getAttribute('src') !== profileImg) {
         img.src = profileImg;
-    }
-
-    const wrapper = el.querySelector('.nickname-wrapper');
-    const badge = el.querySelector('.pinned-badge');
-    if (isPinned && !badge && wrapper) {
-        const span = document.createElement('span');
-        span.className = 'pinned-badge';
-        span.textContent = '내 댓글';
-        wrapper.appendChild(span);
-    } else if (!isPinned && badge) {
-        badge.remove();
     }
 }
 
