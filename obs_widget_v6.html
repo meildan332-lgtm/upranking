@@ -215,24 +215,36 @@ function upDeltaMarkup(delta) {
     return `<span class="delta-badge delta-down">${delta}</span>`;
 }
 
-// 글꼴 프리셋 (id -> 구글 폰트 스타일시트 주소 + CSS font-family 값)
+// 글꼴 프리셋 (id -> @font-face 정의 또는 구글 폰트 스타일시트 + CSS font-family 값)
 const FONT_PRESETS = {
-    pretendard: { css: null, family: "'Pretendard', sans-serif" },
-    noto:       { css: 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap', family: "'Noto Sans KR', sans-serif" },
-    blackhan:   { css: 'https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap', family: "'Black Han Sans', sans-serif" },
-    dohyeon:    { css: 'https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap', family: "'Do Hyeon', sans-serif" },
-    jua:        { css: 'https://fonts.googleapis.com/css2?family=Jua&display=swap', family: "'Jua', sans-serif" },
-    gaegu:      { css: 'https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap', family: "'Gaegu', sans-serif" }
+    pretendard: {
+        family: "'Pretendard', sans-serif"
+    },
+    dahyeon: {
+        family: "'OngleipParkDahyeon', sans-serif",
+        fontFace: `@font-face { font-family: 'OngleipParkDahyeon'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2411-3@1.0/Ownglyph_ParkDaHyun.woff2') format('woff2'); font-weight: normal; font-display: swap; }`
+    },
+    gmarket: {
+        family: "'GMarketSans', sans-serif",
+        fontFace: `@font-face { font-family: 'GMarketSans'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff'); font-weight: 500; font-display: swap; }`
+    },
+    cafe24: {
+        family: "'Cafe24SurroundAir', sans-serif",
+        fontFace: `@font-face { font-family: 'Cafe24SurroundAir'; src: url('https://gcore.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24SsurroundAir.woff') format('woff'); font-weight: normal; font-display: swap; }`
+    },
+    paperlogy: {
+        family: "'Paperozi', sans-serif",
+        fontFace: `@font-face { font-family: 'Paperozi'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2'); font-weight: 500; font-display: swap; }`
+    }
 };
 
 function applyFontPreset(fontId) {
     const preset = FONT_PRESETS[fontId] || FONT_PRESETS.pretendard;
-    if (preset.css && !document.querySelector(`link[data-font-id="${fontId}"]`)) {
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = preset.css;
-        link.setAttribute('data-font-id', fontId);
-        document.head.appendChild(link);
+    if (preset.fontFace && !document.querySelector(`style[data-font-id="${fontId}"]`)) {
+        const styleTag = document.createElement('style');
+        styleTag.setAttribute('data-font-id', fontId);
+        styleTag.textContent = preset.fontFace;
+        document.head.appendChild(styleTag);
     }
     document.body.style.fontFamily = preset.family;
 }
