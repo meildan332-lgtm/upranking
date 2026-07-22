@@ -52,7 +52,9 @@
             will-change: transform, opacity;
         }
 
-        .rank-col { width: 40px; font-size: 26px; font-weight: 900; text-align: center; margin-right: 15px; }
+        .rank-col { width: 40px; margin-right: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .rank-number { font-size: 26px; font-weight: 900; line-height: 1; }
+        .rank-delta-slot { min-height: 13px; font-size: 11px; line-height: 1; margin-top: 3px; }
         .profile-pic { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background-color: #444; margin-right: 15px; border: 1px solid #444; }
         
         .info-col { display: flex; flex-direction: column; justify-content: center; gap: 2px; flex: 1; }
@@ -64,6 +66,11 @@
 
         .up-col { display: flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 900; color: #FF3B30; }
         .thumb-icon { flex-shrink: 0; }
+        .up-delta-slot { font-size: 13px; font-weight: 800; }
+
+        .delta-badge { display: inline-block; }
+        .delta-up { color: #4CAF50; }
+        .delta-down { color: #FF5252; }
 
         .pinned-comment { border: 2px solid #00BFFF; background-color: rgba(10, 25, 40, 0.95); box-shadow: 0 0 15px rgba(0, 191, 255, 0.3); }
         .pinned-badge { background-color: #00BFFF; color: #fff; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; }
@@ -143,6 +150,21 @@ const THUMB_SVG = `<svg class="thumb-icon" viewBox="0 0 24 24" width="18" height
 // key(댓글 고유 식별자) -> DOM 엘리먼트 매핑. 새로고침마다 재사용해서 깜빡임 방지
 const commentElements = new Map();
 
+// key -> { rank, upCount } : 직전 새로고침 시점의 순위/추천수. 이번 값과 비교해서 증감 뱃지를 표시하는 데 사용
+const commentStats = new Map();
+
+function rankDeltaMarkup(delta) {
+    if (!delta) return '';
+    if (delta > 0) return `<span class="delta-badge delta-up">▲${delta}</span>`; // 순위 숫자가 작아짐 = 순위 상승
+    return `<span class="delta-badge delta-down">▼${Math.abs(delta)}</span>`;
+}
+
+function upDeltaMarkup(delta) {
+    if (!delta) return '';
+    if (delta > 0) return `<span class="delta-badge delta-up">+${delta}</span>`;
+    return `<span class="delta-badge delta-down">${delta}</span>`;
+}
+
 // 1. 위젯 화면의 기본 정보(제목, 마감일, QR) 세팅하기
 function setupWidgetUI(urlParams) {
     const title = urlParams.get('title');
@@ -163,9 +185,18 @@ function setupWidgetUI(urlParams) {
 
     const qrSection = document.getElementById("qr-section");
     const qrDesc = document.getElementById("qr-desc");
+    const qrImg = document.getElementById("qr-code-img");
+    const linkUrl = urlParams.get('url');
+
     if (qrMode === 'on') {
         if (qrSection) qrSection.style.display = "flex";
         if (qrDesc && qrText) qrDesc.innerText = qrText;
+
+        // QR 이미지 자체는 서버가 넘겨주지 않으므로, "내 댓글 링크"를 그대로
+        // QR 생성 API에 넘겨서 위젯에서 직접 QR 코드를 만들어 붙임
+        if (qrImg && linkUrl) {
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=5&data=${encodeURIComponent(linkUrl)}`;
+        }
     }
 }
 
@@ -274,7 +305,12 @@ function renderComments(data, targetCommentId, cutoff, mode) {
     // 이번 새로고침에서 보여야 할 행(row) 순서 계산
     const rows = [];
     if (pinnedComment) {
-        rows.push({ key: 'pinned', type: 'comment', comment: pinnedComment, rankText: pinnedRank, extraClass: 'pinned-comment', isPinned: true });
+        const upCount = pinnedComment.likeCnt ?? pinnedComment.up_cnt ?? pinnedComment.good_cnt ?? 0;
+        const prevStats = commentStats.get('pinned');
+        const rankDelta = prevStats ? prevStats.rank - pinnedRank : 0;
+        const upDelta = prevStats ? upCount - prevStats.upCount : 0;
+        rows.push({ key: 'pinned', type: 'comment', comment: pinnedComment, rankText: pinnedRank, extraClass: 'pinned-comment', isPinned: true, rankDelta, upDelta });
+        commentStats.set('pinned', { rank: pinnedRank, upCount });
     }
 
     let cutoffDrawn = false;
@@ -284,14 +320,22 @@ function renderComments(data, targetCommentId, cutoff, mode) {
             cutoffDrawn = true;
         }
         const isBelowCutoff = cutoff > 0 && rank > cutoff;
+        const key = getCommentKey(comment, rank);
+        const upCount = comment.likeCnt ?? comment.up_cnt ?? comment.good_cnt ?? 0;
+        const prevStats = commentStats.get(key);
+        const rankDelta = prevStats ? prevStats.rank - rank : 0;
+        const upDelta = prevStats ? upCount - prevStats.upCount : 0;
         rows.push({
-            key: getCommentKey(comment, rank),
+            key,
             type: 'comment',
             comment,
             rankText: rank,
             extraClass: isBelowCutoff ? 'grayed-out' : '',
-            isPinned: false
+            isPinned: false,
+            rankDelta,
+            upDelta
         });
+        commentStats.set(key, { rank, upCount });
     });
 
     // 순위 변동 애니메이션(FLIP)을 위해 재배치 전 기존 엘리먼트 위치 기록
@@ -309,6 +353,9 @@ function renderComments(data, targetCommentId, cutoff, mode) {
             commentElements.delete(key);
         }
     });
+    commentStats.forEach((_, key) => {
+        if (!newKeys.has(key)) commentStats.delete(key);
+    });
 
     // 각 행을 생성(신규) 또는 갱신(기존)하고, 올바른 순서로 재배치
     const placed = [];
@@ -320,10 +367,10 @@ function renderComments(data, targetCommentId, cutoff, mode) {
             isNew = true;
             el = row.type === 'cutoff'
                 ? createCutoffElement(row.cutoff)
-                : createCommentElement(row.comment, row.rankText, row.extraClass, row.isPinned);
+                : createCommentElement(row.comment, row.rankText, row.extraClass, row.isPinned, row.rankDelta, row.upDelta);
             commentElements.set(row.key, el);
         } else if (row.type === 'comment') {
-            updateCommentElement(el, row.comment, row.rankText, row.extraClass, row.isPinned);
+            updateCommentElement(el, row.comment, row.rankText, row.extraClass, row.isPinned, row.rankDelta, row.upDelta);
         }
 
         listContainer.appendChild(el); // 기존 노드면 위치만 이동
@@ -369,7 +416,7 @@ function createCutoffElement(cutoff) {
 }
 
 // 신규 댓글 엘리먼트 생성 (최초 1회만 실행, 이후엔 updateCommentElement로 내용만 갱신)
-function createCommentElement(comment, rankText, extraClass, isPinned) {
+function createCommentElement(comment, rankText, extraClass, isPinned, rankDelta, upDelta) {
     const nickname = comment.userNick || comment.user_nickname || comment.userId || "알 수 없음";
     const userId = comment.userId || comment.user_id || "";
     const profileImg = comment.profileImage || comment.profile_image || "";
@@ -379,7 +426,10 @@ function createCommentElement(comment, rankText, extraClass, isPinned) {
     box.className = `comment-box ${extraClass}`.trim();
 
     box.innerHTML = `
-        <div class="rank-col">${rankText}</div>
+        <div class="rank-col">
+            <span class="rank-number">${rankText}</span>
+            <span class="rank-delta-slot">${rankDeltaMarkup(rankDelta)}</span>
+        </div>
         ${profileImg ? `<img class="profile-pic" src="${profileImg}" alt="">` : `<div class="profile-pic"></div>`}
         <div class="info-col">
             <div class="nickname-wrapper">
@@ -388,13 +438,13 @@ function createCommentElement(comment, rankText, extraClass, isPinned) {
             </div>
             <span class="userid">${escapeHtml(userId)}</span>
         </div>
-        <div class="up-col">${THUMB_SVG}<span class="up-count">${upCount}</span></div>
+        <div class="up-col">${THUMB_SVG}<span class="up-count">${upCount}</span><span class="up-delta-slot">${upDeltaMarkup(upDelta)}</span></div>
     `;
     return box;
 }
 
 // 기존 댓글 엘리먼트 내용만 갱신 (재생성하지 않음 -> 이미지 재로딩/깜빡임 없음)
-function updateCommentElement(el, comment, rankText, extraClass, isPinned) {
+function updateCommentElement(el, comment, rankText, extraClass, isPinned, rankDelta, upDelta) {
     el.className = `comment-box ${extraClass}`.trim();
 
     const nickname = comment.userNick || comment.user_nickname || comment.userId || "알 수 없음";
@@ -402,8 +452,11 @@ function updateCommentElement(el, comment, rankText, extraClass, isPinned) {
     const profileImg = comment.profileImage || comment.profile_image || "";
     const upCount = comment.likeCnt ?? comment.up_cnt ?? comment.good_cnt ?? 0;
 
-    const rankEl = el.querySelector('.rank-col');
+    const rankEl = el.querySelector('.rank-number');
     if (rankEl && rankEl.textContent !== String(rankText)) rankEl.textContent = rankText;
+
+    const rankDeltaEl = el.querySelector('.rank-delta-slot');
+    if (rankDeltaEl) rankDeltaEl.innerHTML = rankDeltaMarkup(rankDelta);
 
     const nickEl = el.querySelector('.nickname');
     if (nickEl && nickEl.textContent !== nickname) nickEl.textContent = nickname;
@@ -413,6 +466,9 @@ function updateCommentElement(el, comment, rankText, extraClass, isPinned) {
 
     const upEl = el.querySelector('.up-count');
     if (upEl && upEl.textContent !== String(upCount)) upEl.textContent = upCount;
+
+    const upDeltaEl = el.querySelector('.up-delta-slot');
+    if (upDeltaEl) upDeltaEl.innerHTML = upDeltaMarkup(upDelta);
 
     const img = el.querySelector('.profile-pic');
     if (img && img.tagName === 'IMG' && profileImg && img.getAttribute('src') !== profileImg) {
