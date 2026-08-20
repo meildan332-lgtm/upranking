@@ -71,9 +71,11 @@
             will-change: transform, opacity;
         }
 
-        .rank-col { width: 40px; margin-right: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* rank-delta-slot을 절대배치로 빼서, 증감 뱃지 유무와 상관없이 rank-number가
+           항상 카드 정중앙에 오도록 함 (예전엔 빈 증감칸도 높이를 차지해서 숫자가 위로 밀려 보였음) */
+        .rank-col { width: 40px; margin-right: 15px; position: relative; display: flex; align-items: center; justify-content: center; }
         .rank-number { font-size: 26px; font-weight: 900; line-height: 1; }
-        .rank-delta-slot { min-height: 13px; font-size: 11px; line-height: 1; margin-top: 3px; }
+        .rank-delta-slot { position: absolute; top: 100%; left: 0; right: 0; text-align: center; min-height: 13px; font-size: 11px; line-height: 1; margin-top: 3px; }
         .profile-pic { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background-color: #444; margin-right: 15px; border: 1px solid #444; }
         
         .info-col { display: flex; flex-direction: column; justify-content: center; gap: 2px; flex: 1; }
