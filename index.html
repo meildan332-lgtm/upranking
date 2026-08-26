@@ -6,27 +6,277 @@
     <title>업순위 오버레이 생성기</title>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        body { font-family: 'Pretendard', sans-serif; background-color: #f4f6f9; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
-        .page-wrapper { display: flex; gap: 20px; align-items: flex-start; justify-content: center; flex-wrap: wrap; width: 100%; max-width: 900px; margin: 0 auto; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 500px; box-sizing: border-box; }
-        h2 { margin-top: 0; color: #333; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 600; color: #555; }
-        input[type="text"], input[type="number"], input[type="date"], textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-family: 'Pretendard', sans-serif; }
-        textarea { resize: vertical; height: 80px; }
-        textarea::placeholder { color: #aaa; }
-        .radio-group { display: flex; gap: 15px; flex-wrap: wrap; }
-        .radio-group label { font-weight: normal; display: flex; align-items: center; gap: 5px; cursor: pointer; }
-        .range-row { display: flex; gap: 10px; }
+
+        :root {
+            --ink-900: #1a1d29;
+            --ink-700: #3d4152;
+            --ink-500: #6b7086;
+            --ink-300: #b4b8c9;
+            --line: #e7e9f2;
+            --surface: #ffffff;
+            --bg: #eef0f7;
+            --accent: #5b5ff5;
+            --accent-dark: #4548d1;
+            --accent-soft: #eef0ff;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(circle at 12% 0%, rgba(91,95,245,0.08), transparent 45%),
+                radial-gradient(circle at 100% 20%, rgba(91,95,245,0.06), transparent 40%);
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            color: var(--ink-900);
+        }
+
+        .page-wrapper {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            max-width: 940px;
+            margin: 0 auto;
+        }
+
+        .container {
+            background: var(--surface);
+            padding: 32px 30px 28px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 30px rgba(30, 34, 70, 0.08);
+            border: 1px solid var(--line);
+            width: 100%;
+            max-width: 520px;
+        }
+
+        /* ---------- Page header ---------- */
+        .page-header { margin-bottom: 26px; }
+        .page-header .eyebrow {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--accent-dark);
+            background: var(--accent-soft);
+            padding: 4px 10px;
+            border-radius: 999px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            margin: 0 0 6px;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--ink-900);
+            letter-spacing: -0.01em;
+        }
+        .page-header p {
+            margin: 0;
+            font-size: 13.5px;
+            color: var(--ink-500);
+            line-height: 1.5;
+        }
+
+        /* ---------- Section cards ---------- */
+        .section {
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            padding: 20px 18px;
+            margin-bottom: 16px;
+            background: #fbfbfd;
+        }
+        .section-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .section-head .icon {
+            font-size: 15px;
+            line-height: 1;
+        }
+        .section-head h3 {
+            margin: 0;
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--ink-900);
+        }
+        .section-head .desc {
+            margin: 2px 0 0;
+            font-size: 12px;
+            color: var(--ink-500);
+        }
+        .section > .form-group:last-child { margin-bottom: 0; }
+
+        /* ---------- Form basics ---------- */
+        .form-group { margin-bottom: 16px; }
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            font-size: 13.5px;
+            color: var(--ink-700);
+        }
+        .field-hint {
+            margin: 6px 0 0;
+            font-size: 12px;
+            color: var(--ink-500);
+            line-height: 1.5;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1.5px solid var(--line);
+            border-radius: var(--radius-md);
+            box-sizing: border-box;
+            font-family: 'Pretendard', sans-serif;
+            font-size: 14px;
+            color: var(--ink-900);
+            background: #fff;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        input[type="color"] {
+            width: 100%;
+            height: 42px;
+            padding: 4px;
+            border: 1.5px solid var(--line);
+            border-radius: var(--radius-md);
+            background: #fff;
+            cursor: pointer;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(91, 95, 245, 0.15);
+        }
+        input::placeholder, textarea::placeholder { color: var(--ink-300); }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%236b7086'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 36px;
+        }
+
+        textarea { resize: vertical; height: 78px; line-height: 1.5; }
+
+        /* ---------- Radio group (pill style) ---------- */
+        .radio-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .radio-group label {
+            font-weight: 500;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            margin: 0;
+            padding: 9px 14px;
+            border: 1.5px solid var(--line);
+            border-radius: 999px;
+            background: #fff;
+            color: var(--ink-700);
+            transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+        }
+        .radio-group input { accent-color: var(--accent); }
+        .radio-group label:has(input:checked) {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+            font-weight: 700;
+        }
+
+        /* ---------- Color swatches ---------- */
+        .color-swatch-group { display: flex; gap: 12px; flex-wrap: wrap; }
+        .color-swatch { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
+        .color-swatch input { display: none; }
+        .swatch-dot {
+            display: block;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--swatch-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .color-swatch input:checked + .swatch-dot {
+            transform: scale(1.15);
+            box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--swatch-color);
+        }
+        .swatch-label { font-size: 11px; color: var(--ink-500); }
+
+        .range-row { display: flex; gap: 12px; }
         .range-row .form-group { flex: 1; margin-bottom: 0; }
-        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; margin-top: 10px; }
-        button:hover { background-color: #0056b3; }
-        .result-box { margin-top: 20px; padding: 15px; background: #e9ecef; border-radius: 6px; display: none; word-break: break-all; }
-        .divider { height: 1px; background-color: #eee; margin: 20px 0; }
-        .size-hint { font-size: 13px; color: #777; text-align: center; margin: 14px 0 0; }
+
+        .divider { height: 1px; background: var(--line); margin: 18px 0; }
+
+        /* ---------- Button / result ---------- */
+        button.primary-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 15.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: filter 0.15s ease, transform 0.1s ease;
+            margin-top: 6px;
+            box-shadow: 0 6px 16px rgba(91, 95, 245, 0.3);
+        }
+        button.primary-btn:hover { filter: brightness(1.06); }
+        button.primary-btn:active { transform: translateY(1px); }
+
+        .result-box {
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: var(--accent-soft);
+            border: 1px solid #d7d9ff;
+            border-radius: var(--radius-md);
+            display: none;
+            word-break: break-all;
+            font-size: 12.5px;
+            color: var(--ink-700);
+            line-height: 1.6;
+        }
+        .result-box strong { color: var(--accent-dark); font-size: 13px; }
+
+        .size-hint {
+            font-size: 12.5px;
+            color: var(--ink-500);
+            text-align: center;
+            margin: 18px 0 0;
+            line-height: 1.6;
+            background: #f5f6fb;
+            border-radius: var(--radius-md);
+            padding: 10px 12px;
+        }
 
         .tooltip-wrap { position: relative; display: block; text-align: center; margin: 12px 0 0; }
-        .tooltip-trigger { font-size: 13px; color: #555; cursor: help; border-bottom: 1px dashed #999; padding-bottom: 1px; }
+        .tooltip-trigger {
+            font-size: 12.5px;
+            color: var(--ink-500);
+            cursor: help;
+            border-bottom: 1px dashed var(--ink-300);
+            padding-bottom: 1px;
+        }
         .tooltip-box {
             display: none;
             position: absolute;
@@ -35,149 +285,271 @@
             transform: translateX(-50%);
             width: 280px;
             max-width: 80vw;
-            background: #333;
+            background: var(--ink-900);
             color: #fff;
             font-size: 12px;
             line-height: 1.6;
             padding: 12px 14px;
-            border-radius: 8px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+            border-radius: 10px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.25);
             z-index: 20;
             text-align: left;
         }
         .tooltip-wrap:hover .tooltip-box { display: block; }
 
-        .preview-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 360px; box-sizing: border-box; display: none; }
-        .preview-panel h3 { margin-top: 0; margin-bottom: 12px; color: #333; font-size: 16px; }
-        .preview-frame-wrap { background: #1b1b1b; border-radius: 8px; padding: 10px; overflow: auto; }
+        /* ---------- Preview panel ---------- */
+        .preview-panel {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 30px rgba(30, 34, 70, 0.08);
+            border: 1px solid var(--line);
+            width: 100%;
+            max-width: 340px;
+            box-sizing: border-box;
+            display: none;
+            position: sticky;
+            top: 24px;
+        }
+        .preview-panel h3 {
+            margin: 0 0 4px;
+            color: var(--ink-900);
+            font-size: 15px;
+            font-weight: 700;
+        }
+        .preview-panel .preview-sub {
+            margin: 0 0 14px;
+            font-size: 12px;
+            color: var(--ink-500);
+        }
+        .preview-frame-wrap {
+            background: #17181f;
+            border-radius: var(--radius-md);
+            padding: 10px;
+            overflow: auto;
+        }
         .preview-frame { width: 300px; max-width: 100%; height: 560px; border: 0; background: transparent; display: block; }
-        .preview-hint { font-size: 12px; color: #888; margin-top: 10px; line-height: 1.5; }
+        .preview-hint { font-size: 12px; color: var(--ink-500); margin-top: 12px; line-height: 1.5; }
 
-        .footer-area { margin-top: 22px; padding-top: 18px; border-top: 1px solid #eee; text-align: center; }
+        /* ---------- Footer ---------- */
+        .footer-area { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); text-align: center; }
         .soop-link-btn {
             display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 10px 20px; border-radius: 8px; background-color: #1b1b1b; color: #fff;
-            text-decoration: none; font-weight: 600; font-size: 14px; transition: background 0.2s;
+            padding: 10px 20px; border-radius: 8px; background-color: var(--ink-900); color: #fff;
+            text-decoration: none; font-weight: 600; font-size: 13.5px; transition: background 0.2s;
         }
         .soop-link-btn:hover { background-color: #333; }
         .soop-icon { width: 18px; height: 18px; border-radius: 4px; }
-        .footer-credit { margin: 12px 0 0; font-size: 12px; color: #aaa; }
+        .footer-credit { margin: 12px 0 0; font-size: 12px; color: var(--ink-300); }
+
+        @media (max-width: 480px) {
+            .container, .preview-panel { padding: 22px 18px; }
+        }
     </style>
 </head>
 <body>
     <div class="page-wrapper">
         <div class="container">
-            <h2>업순위 오버레이 생성기</h2>
-
-            <div class="form-group">
-                <label>컨텐츠 제목</label>
-                <input type="text" id="contentTitle">
+            <div class="page-header">
+                <span class="eyebrow">SOOP · OBS 브라우저 소스용</span>
+                <h2>업순위 오버레이 생성기</h2>
+                <p>항목을 채우면 오른쪽에 실시간 미리보기가 표시돼요. 완료되면 아래 버튼으로 OBS용 주소를 복사하세요.</p>
             </div>
 
-            <div class="form-group">
-                <label>글꼴</label>
-                <select id="fontSelect">
-                    <option value="pretendard" selected>프리텐다드 (기본)</option>
-                    <option value="dahyeon">온글잎 박다현체</option>
-                    <option value="gmarket">G마켓 산스</option>
-                    <option value="cafe24">카페24 써라운드 에어</option>
-                    <option value="paperlogy">페이퍼로지</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>내 댓글 링크</label>
-                <input type="text" id="targetLink">
-            </div>
-
-            <div class="form-group">
-                <label>커트라인 순위</label>
-                <input type="number" id="cutoff">
-            </div>
-
-            <div class="form-group">
-                <label>마감 일자 (선택)</label>
-                <input type="date" id="deadline">
-            </div>
-
-            <div class="form-group">
-                <label>내 댓글 상단 고정</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="pinMode" value="on" checked> 켜기 (맨 위에 항상 고정)</label>
-                    <label><input type="radio" name="pinMode" value="off"> 끄기 (순위 자리에만 표시)</label>
+            <!-- 순위 데이터 연결 -->
+            <div class="section">
+                <div class="section-head">
+                    <span class="icon">🔗</span>
+                    <div>
+                        <h3>순위 데이터 연결</h3>
+                    </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label>댓글 표시 방식</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="mode" value="top" checked onchange="toggleModeInputs()"> 1위부터 모두 보기</label>
-                    <label><input type="radio" name="mode" value="around" onchange="toggleModeInputs()"> 내 순위 주변만 보기</label>
-                    <label><input type="radio" name="mode" value="mine" onchange="toggleModeInputs()"> 내 순위만 보기</label>
+                <div class="form-group">
+                    <label>내 댓글 링크</label>
+                    <input type="text" id="targetLink" placeholder="게시글 주소를 붙여넣으세요">
                 </div>
-            </div>
 
-            <div id="aroundRangeBox" class="form-group" style="display:none;">
                 <div class="range-row">
                     <div class="form-group">
-                        <label>상위 노출 개수</label>
-                        <input type="number" id="aroundUp" value="3" min="0">
+                        <label>커트라인 순위</label>
+                        <input type="number" id="cutoff" placeholder="예: 10">
                     </div>
                     <div class="form-group">
-                        <label>하위 노출 개수</label>
-                        <input type="number" id="aroundDown" value="3" min="0">
+                        <label>마감 일자 (선택)</label>
+                        <input type="date" id="deadline">
                     </div>
                 </div>
             </div>
 
-            <div class="divider"></div>
-
-            <!-- QR 코드 설정 영역 -->
-            <div class="form-group">
-                <label>QR 코드 표시</label>
-                <div class="radio-group">
-                    <label><input type="radio" name="qrMode" value="on" checked onchange="toggleQrInputs()"> 켜기 (ON)</label>
-                    <label><input type="radio" name="qrMode" value="off" onchange="toggleQrInputs()"> 끄기 (OFF)</label>
+            <!-- 표시 방식 -->
+            <div class="section">
+                <div class="section-head">
+                    <span class="icon">📌</span>
+                    <div>
+                        <h3>고정 & 표시 방식</h3>
+                    </div>
                 </div>
-            </div>
 
-            <div id="qrSettingsBox">
                 <div class="form-group">
-                    <label>QR 코드 링크</label>
+                    <label>내 댓글 상단 고정</label>
                     <div class="radio-group">
-                        <label><input type="radio" name="qrLinkMode" value="comment" checked onchange="toggleQrLinkMode()"> 댓글 링크 사용</label>
-                        <label><input type="radio" name="qrLinkMode" value="custom" onchange="toggleQrLinkMode()"> 직접 입력</label>
+                        <label><input type="radio" name="pinMode" value="on" checked> 켜기 (맨 위 고정)</label>
+                        <label><input type="radio" name="pinMode" value="off"> 끄기 (순위 자리 표시)</label>
                     </div>
                 </div>
 
-                <div class="form-group" id="qrCustomLinkBox" style="display:none;">
-                    <label>QR 코드용 링크 (직접 입력)</label>
-                    <input type="text" id="qrCustomLink" placeholder="https://...">
+                <div class="form-group">
+                    <label>추가로 고정할 닉네임 (선택)</label>
+                    <input type="text" id="pinNicknames" placeholder="예: 닉네임1, 닉네임2, 닉네임3">
+                    <p class="field-hint">여러 명은 쉼표(,)로 구분해서 입력하세요. 해당 닉네임의 댓글이 맨 위에 항상 고정 표시됩니다.</p>
                 </div>
 
                 <div class="form-group">
-                    <label>QR 코드 크기</label>
-                    <select id="qrSize">
-                        <option value="100">100%</option>
-                        <option value="75">75%</option>
-                        <option value="50" selected>50%</option>
-                        <option value="25">25% (인식 잘 안될 수 있음)</option>
+                    <label>댓글 표시 방식</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="mode" value="top" checked onchange="toggleModeInputs()"> 1위부터 모두 보기</label>
+                        <label><input type="radio" name="mode" value="around" onchange="toggleModeInputs()"> 내 순위 주변만</label>
+                        <label><input type="radio" name="mode" value="mine" onchange="toggleModeInputs()"> 내 순위만</label>
+                    </div>
+                </div>
+
+                <div id="aroundRangeBox" class="form-group" style="display:none;">
+                    <div class="range-row">
+                        <div class="form-group">
+                            <label>상위 노출 개수</label>
+                            <input type="number" id="aroundUp" value="3" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label>하위 노출 개수</label>
+                            <input type="number" id="aroundDown" value="3" min="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 디자인 설정 -->
+            <div class="section">
+                <div class="section-head">
+                    <span class="icon">🎨</span>
+                    <div>
+                        <h3>디자인 설정</h3>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>컨텐츠 제목</label>
+                    <input type="text" id="contentTitle" placeholder="예: 8월 업순위 이벤트">
+                </div>
+
+                <div class="form-group">
+                    <label>글꼴</label>
+                    <select id="fontSelect">
+                        <option value="pretendard" selected>프리텐다드 (기본)</option>
+                        <option value="dahyeon">온글잎 박다현체</option>
+                        <option value="gmarket">G마켓 산스</option>
+                        <option value="cafe24">카페24 써라운드 에어</option>
+                        <option value="paperlogy">페이퍼로지</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label>QR 코드 안내 문구</label>
-                    <textarea id="qrText" placeholder="예: 스마트폰으로 카메라를 켜서 스캔해보세요!&#10;UP을 눌러 순위를 올려주세요."></textarea>
+                    <label>오버레이 디자인</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="designMode" value="default" checked> 디자인1</label>
+                        <label><input type="radio" name="designMode" value="ios"> 디자인2</label>
+                    </div>
                 </div>
 
-                <div class="range-row">
-                    <div class="form-group">
-                        <label>안내 문구 글자 크기 (px)</label>
-                        <input type="number" id="qrFontSize" value="15" min="8" max="40">
+                <div class="form-group">
+                    <label>포인트 색상</label>
+                    <div class="color-swatch-group" id="colorSwatchGroup">
+                        <label class="color-swatch" style="--swatch-color:#FF3B30;">
+                            <input type="radio" name="pointColor" value="red" checked>
+                            <span class="swatch-dot"></span>
+                            <span class="swatch-label">빨강</span>
+                        </label>
+                        <label class="color-swatch" style="--swatch-color:#FF9500;">
+                            <input type="radio" name="pointColor" value="orange">
+                            <span class="swatch-dot"></span>
+                            <span class="swatch-label">주황</span>
+                        </label>
+                        <label class="color-swatch" style="--swatch-color:#FFCC00;">
+                            <input type="radio" name="pointColor" value="yellow">
+                            <span class="swatch-dot"></span>
+                            <span class="swatch-label">노랑</span>
+                        </label>
+                        <label class="color-swatch" style="--swatch-color:#34C759;">
+                            <input type="radio" name="pointColor" value="green">
+                            <span class="swatch-dot"></span>
+                            <span class="swatch-label">초록</span>
+                        </label>
+                        <label class="color-swatch" style="--swatch-color:#0A84FF;">
+                            <input type="radio" name="pointColor" value="blue">
+                            <span class="swatch-dot"></span>
+                            <span class="swatch-label">파랑</span>
+                        </label>
+                        <label class="color-swatch" style="--swatch-color:#AF52DE;">
+                            <input type="radio" name="pointColor" value="purple">
+                            <span class="swatch-dot"></span>
+                            <span class="swatch-label">보라</span>
+                        </label>
+                        <label class="color-swatch" style="--swatch-color:#FF375F;">
+                            <input type="radio" name="pointColor" value="pink">
+                            <span class="swatch-dot"></span>
+                            <span class="swatch-label">분홍</span>
+                        </label>
+                        <label class="color-swatch" style="--swatch-color:#48484A;">
+                            <input type="radio" name="pointColor" value="black">
+                            <span class="swatch-dot"></span>
+                            <span class="swatch-label">검정</span>
+                        </label>
                     </div>
+                </div>
+            </div>
+
+            <!-- QR 코드 설정 -->
+            <div class="section">
+                <div class="section-head">
+                    <span class="icon">📱</span>
+                    <div>
+                        <h3>QR 코드 설정</h3>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>QR 코드 표시</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="qrMode" value="on" checked onchange="toggleQrInputs()"> 켜기 (ON)</label>
+                        <label><input type="radio" name="qrMode" value="off" onchange="toggleQrInputs()"> 끄기 (OFF)</label>
+                    </div>
+                </div>
+
+                <div id="qrSettingsBox">
                     <div class="form-group">
-                        <label>안내 문구 글자 색상</label>
-                        <input type="color" id="qrFontColor" value="#dddddd">
+                        <label>QR 코드 크기</label>
+                        <select id="qrSize">
+                            <option value="100">100%</option>
+                            <option value="75">75%</option>
+                            <option value="50" selected>50%</option>
+                            <option value="25">25% (인식 잘 안될 수 있음)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>QR 코드 안내 문구</label>
+                        <textarea id="qrText" placeholder="예: 스마트폰으로 카메라를 켜서 스캔해보세요!&#10;UP을 눌러 순위를 올려주세요."></textarea>
+                    </div>
+
+                    <div class="range-row">
+                        <div class="form-group">
+                            <label>안내 문구 글자 크기 (px)</label>
+                            <input type="number" id="qrFontSize" value="15" min="8" max="40">
+                        </div>
+                        <div class="form-group">
+                            <label>안내 문구 글자 색상</label>
+                            <input type="color" id="qrFontColor" value="#dddddd">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -191,7 +563,7 @@
                 </div>
             </div>
 
-            <button onclick="generateLink()">위젯 주소 생성 및 복사</button>
+            <button class="primary-btn" onclick="generateLink()">위젯 주소 생성 및 복사</button>
 
             <div class="result-box" id="resultBox">
                 <strong style="display:block; margin-bottom:5px;">✅ 생성된 주소 (복사됨):</strong>
@@ -199,12 +571,17 @@
             </div>
 
             <div class="footer-area">
+                <a class="soop-link-btn" href="https://www.sooplive.com/station/htvv2i" target="_blank" rel="noopener noreferrer">
+                    <img src="https://www.google.com/s2/favicons?domain=sooplive.com&sz=64" alt="SOOP" class="soop-icon">
+                    <span>숲 채널 바로가기</span>
+                </a>
                 <p class="footer-credit">Made by 햇뵹</p>
             </div>
         </div>
 
         <div class="preview-panel" id="previewPanel">
             <h3>👀 미리보기</h3>
+            <p class="preview-sub">설정을 바꾸면 실시간으로 반영돼요</p>
             <div class="preview-frame-wrap">
                 <iframe class="preview-frame" id="previewFrame"></iframe>
             </div>
@@ -213,12 +590,6 @@
     </div>
 
     <script>
-        function toggleQrLinkMode() {
-            const qrLinkMode = document.querySelector('input[name="qrLinkMode"]:checked').value;
-            document.getElementById('qrCustomLinkBox').style.display = qrLinkMode === 'custom' ? 'block' : 'none';
-            updatePreview();
-        }
-
         function toggleQrInputs() {
             const qrMode = document.querySelector('input[name="qrMode"]:checked').value;
             const qrSettingsBox = document.getElementById('qrSettingsBox');
@@ -234,14 +605,15 @@
         function buildWidgetUrl() {
             const contentTitle = document.getElementById('contentTitle').value;
             const font = document.getElementById('fontSelect').value;
+            const designMode = document.querySelector('input[name="designMode"]:checked').value;
+            const pointColor = document.querySelector('input[name="pointColor"]:checked').value;
             const link = document.getElementById('targetLink').value;
             const cutoff = document.getElementById('cutoff').value;
             const deadline = document.getElementById('deadline').value;
             const pinMode = document.querySelector('input[name="pinMode"]:checked').value;
+            const pinNicknamesRaw = document.getElementById('pinNicknames').value;
             const mode = document.querySelector('input[name="mode"]:checked').value;
             const qrMode = document.querySelector('input[name="qrMode"]:checked').value;
-            const qrLinkMode = document.querySelector('input[name="qrLinkMode"]:checked').value;
-            const qrCustomLink = document.getElementById('qrCustomLink').value;
             const qrText = document.getElementById('qrText').value;
             const qrSize = document.getElementById('qrSize').value;
             const qrFontSize = document.getElementById('qrFontSize').value;
@@ -251,7 +623,12 @@
 
             const baseUrl = window.location.origin + '/obs_widget_v6.html';
 
-            let finalUrl = `${baseUrl}?title=${encodeURIComponent(contentTitle)}&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}`;
+            let finalUrl = `${baseUrl}?title=${encodeURIComponent(contentTitle)}&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&color=${encodeURIComponent(pointColor)}`;
+
+            const pinNicknames = pinNicknamesRaw.split(',').map(s => s.trim()).filter(Boolean);
+            if (pinNicknames.length > 0) {
+                finalUrl += `&pinNicks=${encodeURIComponent(pinNicknames.join(','))}`;
+            }
 
             if (mode === 'around') {
                 finalUrl += `&aroundUp=${encodeURIComponent(aroundUp || '3')}&aroundDown=${encodeURIComponent(aroundDown || '3')}`;
@@ -264,10 +641,6 @@
                 finalUrl += `&qrsize=${encodeURIComponent(qrSize)}`;
                 finalUrl += `&qrFontSize=${encodeURIComponent(qrFontSize || '15')}`;
                 finalUrl += `&qrFontColor=${encodeURIComponent(qrFontColor || '#dddddd')}`;
-                finalUrl += `&qrLinkMode=${encodeURIComponent(qrLinkMode)}`;
-                if (qrLinkMode === 'custom') {
-                    finalUrl += `&qrlink=${encodeURIComponent(qrCustomLink.trim())}`;
-                }
             }
 
             return finalUrl;
@@ -312,7 +685,6 @@
         });
 
         toggleQrInputs();
-        toggleQrLinkMode();
         toggleModeInputs();
     </script>
 </body>
