@@ -535,6 +535,20 @@
 
                 <div id="qrSettingsBox">
                     <div class="form-group">
+                        <label>QR 코드 연결 링크</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="qrLinkMode" value="auto" checked onchange="toggleQrLinkInput()"> 댓글 링크 사용</label>
+                            <label><input type="radio" name="qrLinkMode" value="custom" onchange="toggleQrLinkInput()"> 직접 입력</label>
+                        </div>
+                        <p class="field-hint">기본은 위에서 입력한 "내 댓글 링크"로 QR이 연결돼요. 다른 주소로 보내고 싶다면 직접 입력을 선택하세요.</p>
+                    </div>
+
+                    <div class="form-group" id="qrCustomLinkBox" style="display:none;">
+                        <label>QR 코드로 연결할 주소</label>
+                        <input type="text" id="qrCustomLink" placeholder="예: https://sooplive.com/...">
+                    </div>
+
+                    <div class="form-group">
                         <label>QR 코드 크기</label>
                         <select id="qrSize">
                             <option value="100">100%</option>
@@ -604,6 +618,11 @@
             qrSettingsBox.style.display = qrMode === 'on' ? 'block' : 'none';
         }
 
+        function toggleQrLinkInput() {
+            const qrLinkMode = document.querySelector('input[name="qrLinkMode"]:checked').value;
+            document.getElementById('qrCustomLinkBox').style.display = qrLinkMode === 'custom' ? 'block' : 'none';
+        }
+
         function toggleModeInputs() {
             const mode = document.querySelector('input[name="mode"]:checked').value;
             document.getElementById('aroundRangeBox').style.display = mode === 'around' ? 'block' : 'none';
@@ -625,6 +644,8 @@
             const qrMode = document.querySelector('input[name="qrMode"]:checked').value;
             const qrText = document.getElementById('qrText').value;
             const qrSize = document.getElementById('qrSize').value;
+            const qrLinkMode = document.querySelector('input[name="qrLinkMode"]:checked').value;
+            const qrCustomLink = document.getElementById('qrCustomLink').value;
             const qrFontSize = document.getElementById('qrFontSize').value;
             const qrFontColor = document.getElementById('qrFontColor').value;
             const aroundUp = document.getElementById('aroundUp').value;
@@ -650,6 +671,10 @@
                 finalUrl += `&qrsize=${encodeURIComponent(qrSize)}`;
                 finalUrl += `&qrFontSize=${encodeURIComponent(qrFontSize || '15')}`;
                 finalUrl += `&qrFontColor=${encodeURIComponent(qrFontColor || '#dddddd')}`;
+                finalUrl += `&qrLinkMode=${encodeURIComponent(qrLinkMode)}`;
+                if (qrLinkMode === 'custom' && qrCustomLink.trim()) {
+                    finalUrl += `&qrCustomLink=${encodeURIComponent(qrCustomLink.trim())}`;
+                }
             }
 
             return finalUrl;
@@ -694,6 +719,7 @@
         });
 
         toggleQrInputs();
+        toggleQrLinkInput();
         toggleModeInputs();
     </script>
 </body>

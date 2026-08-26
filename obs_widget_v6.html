@@ -400,6 +400,8 @@ function setupWidgetUI(urlParams) {
     const qrSize = urlParams.get('qrsize') || '50';
     const qrFontSize = urlParams.get('qrFontSize') || '15';
     const qrFontColor = urlParams.get('qrFontColor') || '#dddddd';
+    const qrLinkMode = urlParams.get('qrLinkMode') || 'auto';
+    const qrCustomLink = urlParams.get('qrCustomLink') || '';
 
     applyFontPreset(font);
     applyDesignPreset(design);
@@ -420,7 +422,8 @@ function setupWidgetUI(urlParams) {
     const qrSection = document.getElementById("qr-section");
     const qrDesc = document.getElementById("qr-desc");
     const qrImg = document.getElementById("qr-code-img");
-    const linkUrl = urlParams.get('url');
+    // QR 코드 연결 링크: "직접 입력"을 선택했으면 그 주소를, 아니면 댓글 링크(url)를 그대로 사용
+    const linkUrl = (qrLinkMode === 'custom' && qrCustomLink) ? qrCustomLink : urlParams.get('url');
 
     if (qrMode === 'on') {
         if (qrSection) qrSection.style.display = "flex";
