@@ -17,6 +17,39 @@
         :root {
             --accent-color: #FF3B30;
             --accent-color-rgb: 255, 59, 48;
+
+            --text-primary: #ffffff;
+            --text-secondary: #ffffff;
+            --text-muted: #ffffff;
+            --container-bg: rgba(0, 0, 0, 0.7);
+            --card-bg: rgba(24, 24, 24, 1);
+            --card-border: #333;
+            --card-shadow: rgba(0, 0, 0, 0.5);
+            --deadline-bg: rgba(0, 0, 0, 0.6);
+            --pinned-bg: rgba(10, 25, 40, 0.95);
+            --qr-bg: rgba(24, 24, 24, 0.85);
+            --qr-border: #444;
+            --qr-desc-color: #ddd;
+            --header-text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
+            --update-text-shadow: 1px 1px 3px rgba(0,0,0,0.9);
+        }
+
+        /* ===== 라이트 모드: body에 theme-light 클래스가 붙으면 적용됨 (디자인1/디자인2 공통) ===== */
+        body.theme-light {
+            --text-primary: #1a1d29;
+            --text-secondary: #3d4152;
+            --text-muted: #6b7086;
+            --container-bg: rgba(255, 255, 255, 0.82);
+            --card-bg: rgba(255, 255, 255, 0.97);
+            --card-border: #e5e7f0;
+            --card-shadow: rgba(30, 34, 70, 0.12);
+            --deadline-bg: rgba(255, 255, 255, 0.8);
+            --pinned-bg: rgba(232, 241, 255, 0.97);
+            --qr-bg: rgba(255, 255, 255, 0.92);
+            --qr-border: #e5e7f0;
+            --qr-desc-color: #3d4152;
+            --header-text-shadow: none;
+            --update-text-shadow: none;
         }
 
         body {
@@ -25,7 +58,7 @@
             padding: 0;
             overflow: hidden;
             font-family: 'Pretendard', sans-serif;
-            color: #ffffff;
+            color: var(--text-primary);
             width: 100vw;
             height: 100vh;
             position: relative;
@@ -49,7 +82,7 @@
 
         #widget-container {
             width: 100%; max-width: 550px; display: flex; flex-direction: column; gap: 12px;
-            background-color: rgba(0, 0, 0, 0.7);
+            background-color: var(--container-bg);
             padding: 20px;
             border-radius: 16px;
             box-sizing: border-box;
@@ -57,36 +90,36 @@
 
         /* 헤더 부분 좌우 정렬을 위한 flex 속성 */
         .widget-header {
-            display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0px; text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
+            display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 0px; text-shadow: var(--header-text-shadow);
         }
-        .widget-title { font-size: 24px; font-weight: 800; color: #ffffff; margin: 0; }
-        .deadline-text { font-size: 14px; color: #ffffff; font-weight: bold; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 6px; }
+        .widget-title { font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0; }
+        .deadline-text { font-size: 14px; color: var(--text-primary); font-weight: bold; background: var(--deadline-bg); padding: 4px 8px; border-radius: 6px; }
 
         /* 댓글 목록 자체에 간격을 줘서 커트라인/다음 댓글이 서로 겹치지 않도록 함 */
         #comment-list { display: flex; flex-direction: column; gap: 10px; }
 
         .comment-box {
-            background-color: rgba(24, 24, 24, 1); 
-            border: 1px solid #333;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
             border-radius: 12px;
             padding: 14px 20px;
             display: flex;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 10px var(--card-shadow);
             will-change: transform, opacity;
         }
 
-        .rank-col { width: 40px; margin-right: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .rank-number { font-size: 26px; font-weight: 900; line-height: 1; }
-        .rank-delta-slot { min-height: 13px; font-size: 11px; line-height: 1; margin-top: 3px; }
+        .rank-col { width: 40px; margin-right: 15px; position: relative; display: flex; align-items: center; justify-content: center; }
+        .rank-number { font-size: 26px; font-weight: 900; line-height: 1; color: var(--text-primary); }
+        .rank-delta-slot { position: absolute; top: 100%; left: 0; right: 0; margin-top: 3px; font-size: 11px; line-height: 1; text-align: center; }
         .profile-pic { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background-color: #444; margin-right: 15px; border: 1px solid #444; }
         
         .info-col { display: flex; flex-direction: column; justify-content: center; gap: 2px; flex: 1; }
         .nickname-wrapper { display: flex; align-items: center; gap: 6px; }
-        .nickname { font-size: 17px; font-weight: 800; color: #FFF; }
+        .nickname { font-size: 17px; font-weight: 800; color: var(--text-primary); }
         .highlight-badge { background-color: var(--accent-color, #76c944); color: white; font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 10px; }
-        .userid { font-size: 14px; color: #ffffff; font-weight: 500; }
-        .post-date { font-size: 13px; color: #ffffff; }
+        .userid { font-size: 14px; color: var(--text-secondary); font-weight: 500; }
+        .post-date { font-size: 13px; color: var(--text-secondary); }
 
         .up-col { display: flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 900; color: var(--accent-color, #FF3B30); }
         .thumb-icon { flex-shrink: 0; color: var(--accent-color, #FF3B30); }
@@ -96,7 +129,7 @@
         .delta-up { color: #4CAF50; }
         .delta-down { color: #FF5252; }
 
-        .pinned-comment { border: 2px solid var(--accent-color, #00BFFF); background-color: rgba(10, 25, 40, 0.95); box-shadow: 0 0 15px rgba(var(--accent-color-rgb, 0, 191, 255), 0.3); }
+        .pinned-comment { border: 2px solid var(--accent-color, #00BFFF); background-color: var(--pinned-bg); box-shadow: 0 0 15px rgba(var(--accent-color-rgb, 0, 191, 255), 0.3); }
 
         /* 커트라인: 자체 높이를 가진 행으로 분리해서 위/아래 댓글에 절대 가려지지 않도록 함 */
         .cutoff-row {
@@ -126,8 +159,8 @@
         }
 
         .grayed-out { filter: grayscale(100%); opacity: 0.5; }
-        .grayed-out .rank-col { color: #ffffff !important; }
-        .grayed-out .up-col { color: #ffffff; }
+        .grayed-out .rank-col { color: var(--text-muted) !important; }
+        .grayed-out .up-col { color: var(--text-muted); }
 
         .qr-section {
             display: none;
@@ -135,21 +168,21 @@
             flex-wrap: wrap;
             align-items: center;
             justify-content: center;
-            background-color: rgba(24, 24, 24, 0.85);
-            border: 1px solid #444;
+            background-color: var(--qr-bg);
+            border: 1px solid var(--qr-border);
             border-radius: 12px;
             padding: 15px;
             margin-top: 5px;
             gap: 15px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 10px var(--card-shadow);
         }
 
         /* 너비(%)는 JS에서 댓글 카드 가로폭(=이 섹션의 폭) 기준으로 지정됨 */
         .qr-image { width: 50%; aspect-ratio: 1 / 1; background-color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; flex-shrink: 0; margin: 0 auto; }
         .qr-image svg { width: 100%; height: 100%; display: block; }
         .qr-text-col { display: flex; flex-direction: column; gap: 6px; flex: 1 1 150px; min-width: 150px; }
-        .qr-desc { font-size: 15px; font-weight: 600; color: #ddd; line-height: 1.4; word-break: keep-all; white-space: pre-line; text-align: center; }
-        .update-time { text-align: right; font-size: 13px; color: #ffffff; margin-top: 2px; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.9); }
+        .qr-desc { font-size: 15px; font-weight: 600; color: var(--qr-desc-color); line-height: 1.4; word-break: keep-all; white-space: pre-line; text-align: center; }
+        .update-time { text-align: right; font-size: 13px; color: var(--text-secondary); margin-top: 2px; font-weight: 600; text-shadow: var(--update-text-shadow); }
 
         /* ===== 아이폰 스타일(동글동글) 디자인: body에 design-ios 클래스가 붙으면 적용됨 ===== */
         body.design-ios #widget-container {
@@ -195,6 +228,17 @@
         body.design-ios .qr-image { border-radius: 22px; }
         body.design-ios .deadline-text { border-radius: 999px; }
         body.design-ios .highlight-badge { border-radius: 999px; }
+
+        /* 디자인2(아이폰 스타일) + 라이트 모드 조합: 유리 배경을 밝은 톤으로 전환 */
+        body.design-ios.theme-light #widget-container {
+            background-color: rgba(255, 255, 255, 0.55);
+        }
+        body.design-ios.theme-light .comment-box {
+            border: 1px solid rgba(20, 20, 30, 0.08);
+            background-color: rgba(255, 255, 255, 0.75);
+            box-shadow: 0 10px 26px rgba(30, 34, 70, 0.12);
+        }
+        body.design-ios.theme-light .profile-pic { border: 2px solid rgba(20, 20, 30, 0.1); }
     </style>
 </head>
 <body>
@@ -300,6 +344,10 @@ function applyDesignPreset(designKey) {
     document.body.classList.toggle('design-ios', designKey === 'ios');
 }
 
+function applyThemePreset(themeKey) {
+    document.body.classList.toggle('theme-light', themeKey === 'light');
+}
+
 // 글꼴 프리셋 (id -> @font-face 정의 또는 구글 폰트 스타일시트 + CSS font-family 값)
 const FONT_PRESETS = {
     pretendard: {
@@ -340,6 +388,7 @@ function setupWidgetUI(urlParams) {
     const deadline = urlParams.get('deadline');
     const font = urlParams.get('font') || 'pretendard';
     const design = urlParams.get('design') || 'default';
+    const theme = urlParams.get('theme') || 'dark';
     const color = urlParams.get('color') || 'red';
     const qrMode = urlParams.get('qr');
     const qrText = urlParams.get('qrtext');
@@ -349,6 +398,7 @@ function setupWidgetUI(urlParams) {
 
     applyFontPreset(font);
     applyDesignPreset(design);
+    applyThemePreset(theme);
     applyAccentColor(color);
 
     if (title !== null) {
@@ -503,10 +553,12 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
         if (pinnedComment) usedComments.add(pinnedComment);
 
         const nicknameOf = (c) => String(c.userNick || c.user_nickname || c.userId || c.user_id || "");
+        // 닉네임 뒤에 붙는 특수문자(_, -, ! 등)는 무시하고 비교. 예: "단즈_"도 "단즈"로 검색하면 매칭됨
+        const normalizeNick = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 
         pinNicknames.forEach(nick => {
-            const target = nick.toLowerCase();
-            const found = rankedComments.find(c => !usedComments.has(c) && nicknameOf(c).toLowerCase() === target);
+            const target = normalizeNick(nick);
+            const found = rankedComments.find(c => !usedComments.has(c) && normalizeNick(nicknameOf(c)) === target);
             if (found) {
                 usedComments.add(found);
                 nickPinnedList.push({ comment: found, rank: rankedComments.indexOf(found) + 1, nick });
@@ -545,7 +597,7 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
         const prevStats = commentStats.get(statKey);
         const rankDelta = prevStats ? prevStats.rank - rank : 0;
         const upDelta = prevStats ? upCount - prevStats.upCount : 0;
-        rows.push({ key: statKey, type: 'comment', comment, rankText: rank, extraClass: 'pinned-comment', isPinned: true, rankDelta, upDelta, badge: '고정' });
+        rows.push({ key: statKey, type: 'comment', comment, rankText: rank, extraClass: 'pinned-comment', isPinned: true, rankDelta, upDelta });
         commentStats.set(statKey, { rank, upCount });
     });
 
@@ -584,8 +636,7 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
             extraClass: classNames,
             isPinned: isMine || isNickPinned,
             rankDelta,
-            upDelta,
-            badge: isNickPinned ? '고정' : undefined
+            upDelta
         });
         commentStats.set(key, { rank, upCount });
     });

@@ -462,6 +462,14 @@
                 </div>
 
                 <div class="form-group">
+                    <label>테마</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="themeMode" value="dark" checked> 다크모드</label>
+                        <label><input type="radio" name="themeMode" value="light"> 라이트모드</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label>포인트 색상</label>
                     <div class="color-swatch-group" id="colorSwatchGroup">
                         <label class="color-swatch" style="--swatch-color:#FF3B30;">
@@ -606,6 +614,7 @@
             const contentTitle = document.getElementById('contentTitle').value;
             const font = document.getElementById('fontSelect').value;
             const designMode = document.querySelector('input[name="designMode"]:checked').value;
+            const themeMode = document.querySelector('input[name="themeMode"]:checked').value;
             const pointColor = document.querySelector('input[name="pointColor"]:checked').value;
             const link = document.getElementById('targetLink').value;
             const cutoff = document.getElementById('cutoff').value;
@@ -623,7 +632,7 @@
 
             const baseUrl = window.location.origin + '/obs_widget_v6.html';
 
-            let finalUrl = `${baseUrl}?title=${encodeURIComponent(contentTitle)}&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&color=${encodeURIComponent(pointColor)}`;
+            let finalUrl = `${baseUrl}?title=${encodeURIComponent(contentTitle)}&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&color=${encodeURIComponent(pointColor)}`;
 
             const pinNicknames = pinNicknamesRaw.split(',').map(s => s.trim()).filter(Boolean);
             if (pinNicknames.length > 0) {
