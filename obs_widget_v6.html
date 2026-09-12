@@ -112,6 +112,7 @@
         .rank-col { width: 40px; margin-right: 15px; position: relative; display: flex; align-items: center; justify-content: center; }
         .rank-number { font-size: 26px; font-weight: 900; line-height: 1; color: var(--text-primary); }
         .rank-delta-slot { position: absolute; top: 100%; left: 0; right: 0; margin-top: 3px; font-size: 11px; line-height: 1; text-align: center; }
+        .rank-danger { display: block; margin-top: 4px; color: #ff3b30; font-size: 12px; font-weight: 900; line-height: 1; text-align: center; text-shadow: none; }
         .profile-pic { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; background-color: #444; margin-right: 15px; border: 1px solid #444; }
         
         .info-col { display: flex; flex-direction: column; justify-content: center; gap: 2px; flex: 1; }
@@ -619,6 +620,9 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
                 nickPinnedList.push({ comment: found, rank: rankedComments.indexOf(found) + 1, nick });
             }
         });
+
+        // 내 댓글 아래의 추가 고정 댓글은 입력 순서가 아닌 실제 순위가 높은 순서로 표시
+        nickPinnedList.sort((a, b) => a.rank - b.rank);
     }
 
     let visibleComments = rankedComments.map((c, i) => ({ comment: c, rank: i + 1 }));
@@ -641,7 +645,7 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
         const prevStats = commentStats.get('pinned');
         const rankDelta = prevStats ? prevStats.rank - pinnedRank : 0;
         const upDelta = prevStats ? upCount - prevStats.upCount : 0;
-        rows.push({ key: 'pinned', type: 'comment', comment: pinnedComment, rankText: pinnedRank, extraClass: 'pinned-comment', isPinned: true, rankDelta, upDelta });
+        rows.push({ key: 'pinned', type: 'comment', comment: pinnedComment, rankText: pinnedRank, extraClass: 'pinned-comment', isPinned: true, danger: cutoff > 0 && pinnedRank > cutoff, rankDelta, upDelta });
         commentStats.set('pinned', { rank: pinnedRank, upCount });
     }
 
@@ -652,7 +656,7 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
         const prevStats = commentStats.get(statKey);
         const rankDelta = prevStats ? prevStats.rank - rank : 0;
         const upDelta = prevStats ? upCount - prevStats.upCount : 0;
-        rows.push({ key: statKey, type: 'comment', comment, rankText: rank, extraClass: 'pinned-comment', isPinned: true, rankDelta, upDelta });
+        rows.push({ key: statKey, type: 'comment', comment, rankText: rank, extraClass: 'pinned-comment', isPinned: true, danger: cutoff > 0 && rank > cutoff, rankDelta, upDelta });
         commentStats.set(statKey, { rank, upCount });
     });
 
@@ -690,6 +694,7 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
             rankText: rank,
             extraClass: classNames,
             isPinned: isMine || isNickPinned,
+            danger: (isMine || isNickPinned) && isBelowCutoff,
             rankDelta,
             upDelta
         });
@@ -725,10 +730,10 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
             isNew = true;
             el = row.type === 'cutoff'
                 ? createCutoffElement(row.diff)
-                : createCommentElement(row.comment, row.rankText, row.extraClass, row.isPinned, row.rankDelta, row.upDelta, row.badge);
+                : createCommentElement(row.comment, row.rankText, row.extraClass, row.isPinned, row.rankDelta, row.upDelta, row.badge, row.danger);
             commentElements.set(row.key, el);
         } else if (row.type === 'comment') {
-            updateCommentElement(el, row.comment, row.rankText, row.extraClass, row.isPinned, row.rankDelta, row.upDelta, row.badge);
+            updateCommentElement(el, row.comment, row.rankText, row.extraClass, row.isPinned, row.rankDelta, row.upDelta, row.badge, row.danger);
         } else if (row.type === 'cutoff') {
             updateCutoffElement(el, row.diff);
         }
@@ -787,7 +792,7 @@ function updateCutoffElement(el, diff) {
 }
 
 // 신규 댓글 엘리먼트 생성 (최초 1회만 실행, 이후엔 updateCommentElement로 내용만 갱신)
-function createCommentElement(comment, rankText, extraClass, isPinned, rankDelta, upDelta, badgeText) {
+function createCommentElement(comment, rankText, extraClass, isPinned, rankDelta, upDelta, badgeText, danger) {
     const nickname = comment.userNick || comment.user_nickname || comment.userId || "알 수 없음";
     const userId = comment.userId || comment.user_id || "";
     const profileImg = comment.profileImage || comment.profile_image || "";
@@ -798,7 +803,7 @@ function createCommentElement(comment, rankText, extraClass, isPinned, rankDelta
 
     box.innerHTML = `
         <div class="rank-col">
-            <span class="rank-number">${rankText}</span>
+            <div><span class="rank-number">${rankText}</span><span class="rank-danger" style="display:${danger ? 'block' : 'none'};">위기</span></div>
             <span class="rank-delta-slot">${rankDeltaMarkup(rankDelta)}</span>
         </div>
         ${profileImg ? `<img class="profile-pic" src="${profileImg}" alt="">` : `<div class="profile-pic"></div>`}
@@ -815,7 +820,7 @@ function createCommentElement(comment, rankText, extraClass, isPinned, rankDelta
 }
 
 // 기존 댓글 엘리먼트 내용만 갱신 (재생성하지 않음 -> 이미지 재로딩/깜빡임 없음)
-function updateCommentElement(el, comment, rankText, extraClass, isPinned, rankDelta, upDelta, badgeText) {
+function updateCommentElement(el, comment, rankText, extraClass, isPinned, rankDelta, upDelta, badgeText, danger) {
     el.className = `comment-box ${extraClass}`.trim();
 
     const nickname = comment.userNick || comment.user_nickname || comment.userId || "알 수 없음";
@@ -825,6 +830,9 @@ function updateCommentElement(el, comment, rankText, extraClass, isPinned, rankD
 
     const rankEl = el.querySelector('.rank-number');
     if (rankEl && rankEl.textContent !== String(rankText)) rankEl.textContent = rankText;
+
+    const dangerEl = el.querySelector('.rank-danger');
+    if (dangerEl) dangerEl.style.display = danger ? 'block' : 'none';
 
     const rankDeltaEl = el.querySelector('.rank-delta-slot');
     if (rankDeltaEl) rankDeltaEl.innerHTML = rankDeltaMarkup(rankDelta);
