@@ -178,65 +178,104 @@
         }
 
         /* 너비(%)는 JS에서 댓글 카드 가로폭(=이 섹션의 폭) 기준으로 지정됨 */
-        .qr-image { width: 50%; aspect-ratio: 1 / 1; background-color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; flex-shrink: 0; margin: 0 auto; }
+        .qr-image { position: relative; width: 75%; aspect-ratio: 1 / 1; background-color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; flex-shrink: 0; margin: 0 auto; }
         .qr-image svg { width: 100%; height: 100%; display: block; }
+        .qr-profile-image {
+            display: none;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 19%;
+            height: 19%;
+            transform: translate(-50%, -50%);
+            border: 5px solid #fff;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .28);
+            object-fit: cover;
+            box-sizing: border-box;
+            z-index: 2;
+        }
         .qr-text-col { display: flex; flex-direction: column; gap: 6px; flex: 1 1 150px; min-width: 150px; }
         .qr-desc { font-size: 15px; font-weight: 600; color: var(--qr-desc-color); line-height: 1.4; word-break: keep-all; white-space: pre-line; text-align: center; }
         .update-time { text-align: right; font-size: 13px; color: var(--text-secondary); margin-top: 2px; font-weight: 600; text-shadow: var(--update-text-shadow); }
 
-        /* ===== 아이폰 스타일(동글동글) 디자인: body에 design-ios 클래스가 붙으면 적용됨 ===== */
+        /* ===== 디자인2: 귀엽고 통통 튀는 팝 스타일 ===== */
         body.design-ios #widget-container {
-            border-radius: 32px;
-            background-color: rgba(20, 20, 22, 0.55);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
+            position: relative;
+            border: 3px solid rgba(var(--accent-color-rgb), 0.58);
+            border-radius: 36px;
+            background:
+                radial-gradient(circle at 8% 5%, rgba(255, 255, 255, 0.18) 0 18px, transparent 19px),
+                radial-gradient(circle at 94% 12%, rgba(var(--accent-color-rgb), 0.26) 0 26px, transparent 27px),
+                rgba(26, 22, 38, 0.86);
+            box-shadow: 0 12px 0 rgba(var(--accent-color-rgb), 0.28), 0 22px 36px rgba(0, 0, 0, 0.34);
+            overflow: hidden;
         }
+        body.design-ios .widget-header { align-items: center; padding: 4px 4px 2px; }
+        body.design-ios .widget-title { font-size: 27px; letter-spacing: -0.04em; }
         body.design-ios .comment-box {
-            border-radius: 26px;
-            padding: 16px 22px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background-color: rgba(30, 30, 32, 0.72);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+            border-radius: 24px;
+            padding: 16px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.13);
+            background: linear-gradient(135deg, rgba(56, 49, 72, 0.96), rgba(35, 31, 48, 0.96));
+            box-shadow: 0 7px 0 rgba(0, 0, 0, 0.22), 0 12px 22px rgba(0, 0, 0, 0.22);
+            transition: transform 0.25s ease;
+            animation: pop-in 0.42s cubic-bezier(.2, 1.45, .45, 1) both;
         }
+        body.design-ios .comment-box:nth-child(even) { transform: rotate(0.35deg); }
+        body.design-ios .comment-box:nth-child(odd) { transform: rotate(-0.35deg); }
         body.design-ios .rank-col { width: 44px; }
         body.design-ios .rank-number {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 34px;
-            height: 34px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            background: var(--accent-color, #FF3B30);
+            background: linear-gradient(145deg, color-mix(in srgb, var(--accent-color) 70%, white), var(--accent-color));
             color: #fff;
-            font-size: 15px;
+            font-size: 17px;
+            border: 3px solid rgba(255, 255, 255, 0.84);
+            box-shadow: 0 4px 0 rgba(var(--accent-color-rgb), 0.42);
         }
-        body.design-ios .profile-pic { border: 2px solid rgba(255, 255, 255, 0.15); }
+        body.design-ios .profile-pic { border: 3px solid rgba(255, 255, 255, 0.82); box-shadow: 0 4px 0 rgba(var(--accent-color-rgb), 0.34); }
+        body.design-ios .nickname { font-size: 18px; letter-spacing: -0.02em; }
         body.design-ios .up-col {
-            background-color: rgba(var(--accent-color-rgb, 255, 59, 48), 0.15);
-            padding: 6px 12px;
+            background: rgba(var(--accent-color-rgb), 0.18);
+            border: 2px solid rgba(var(--accent-color-rgb), 0.5);
+            padding: 7px 12px;
             border-radius: 999px;
             font-size: 18px;
+            box-shadow: 0 4px 0 rgba(var(--accent-color-rgb), 0.22);
         }
         body.design-ios .pinned-comment {
             border-radius: 26px;
             box-shadow: 0 0 22px rgba(var(--accent-color-rgb, 0, 191, 255), 0.4);
         }
-        body.design-ios .cutoff-text { border-radius: 999px; padding: 6px 16px; }
-        body.design-ios .qr-section { border-radius: 26px; }
-        body.design-ios .qr-image { border-radius: 22px; }
-        body.design-ios .deadline-text { border-radius: 999px; }
-        body.design-ios .highlight-badge { border-radius: 999px; }
+        body.design-ios .cutoff-text { border: 3px solid rgba(255,255,255,.8); border-radius: 999px; padding: 6px 18px; box-shadow: 0 4px 0 rgba(var(--accent-color-rgb), .35); }
+        body.design-ios .qr-section { border: 2px solid rgba(var(--accent-color-rgb), .5); border-radius: 26px; box-shadow: 0 7px 0 rgba(var(--accent-color-rgb), .2); }
+        body.design-ios .qr-image { border: 4px solid #fff; border-radius: 22px; box-shadow: 0 6px 0 rgba(var(--accent-color-rgb), .28); }
+        body.design-ios .deadline-text { border: 2px solid rgba(var(--accent-color-rgb), .55); border-radius: 999px; box-shadow: 0 4px 0 rgba(var(--accent-color-rgb), .22); }
+        body.design-ios .highlight-badge { border: 2px solid rgba(255,255,255,.78); border-radius: 999px; }
+
+        @keyframes pop-in {
+            from { opacity: 0; scale: .92; translate: 0 8px; }
+            to { opacity: 1; scale: 1; translate: 0 0; }
+        }
 
         /* 디자인2(아이폰 스타일) + 라이트 모드 조합: 유리 배경을 밝은 톤으로 전환 */
         body.design-ios.theme-light #widget-container {
-            background-color: rgba(255, 255, 255, 0.55);
+            background:
+                radial-gradient(circle at 8% 5%, rgba(var(--accent-color-rgb), 0.12) 0 18px, transparent 19px),
+                radial-gradient(circle at 94% 12%, rgba(var(--accent-color-rgb), 0.2) 0 26px, transparent 27px),
+                rgba(255, 249, 253, 0.94);
+            box-shadow: 0 12px 0 rgba(var(--accent-color-rgb), 0.22), 0 22px 36px rgba(82, 60, 92, 0.15);
         }
         body.design-ios.theme-light .comment-box {
-            border: 1px solid rgba(20, 20, 30, 0.08);
-            background-color: rgba(255, 255, 255, 0.75);
-            box-shadow: 0 10px 26px rgba(30, 34, 70, 0.12);
+            border: 2px solid rgba(var(--accent-color-rgb), 0.24);
+            background: linear-gradient(135deg, #ffffff, color-mix(in srgb, var(--accent-color) 7%, white));
+            box-shadow: 0 7px 0 rgba(var(--accent-color-rgb), 0.16), 0 12px 22px rgba(82, 60, 92, 0.1);
         }
         body.design-ios.theme-light .profile-pic { border: 2px solid rgba(20, 20, 30, 0.1); }
         body.design-ios.theme-light .pinned-comment {
@@ -250,7 +289,9 @@
     <div id="scale-stage">
     <div id="widget-container">
         <div class="qr-section" id="qr-section">
-            <div id="qr-code-img" class="qr-image"></div>
+            <div id="qr-code-img" class="qr-image">
+                <img id="qr-profile-image" class="qr-profile-image" alt="내 댓글 프로필 사진">
+            </div>
             <div class="qr-text-col">
                 <div class="qr-desc" id="qr-desc"></div>
             </div>
@@ -397,7 +438,7 @@ function setupWidgetUI(urlParams) {
     const color = urlParams.get('color') || 'red';
     const qrMode = urlParams.get('qr');
     const qrText = urlParams.get('qrtext');
-    const qrSize = urlParams.get('qrsize') || '50';
+    const qrSize = urlParams.get('qrsize') || '75';
     const qrFontSize = urlParams.get('qrFontSize') || '15';
     const qrFontColor = urlParams.get('qrFontColor') || '#dddddd';
     const qrLinkMode = urlParams.get('qrLinkMode') || 'auto';
@@ -432,7 +473,7 @@ function setupWidgetUI(urlParams) {
         // 댓글 카드 가로폭(=qr-section 폭) 기준 QR 코드 크기 지정
         if (qrImg) {
             const sizePercent = parseInt(qrSize, 10);
-            qrImg.style.width = (Number.isFinite(sizePercent) ? sizePercent : 50) + '%';
+            qrImg.style.width = (Number.isFinite(sizePercent) ? sizePercent : 75) + '%';
         }
 
         // 안내 문구 글자 크기/색상 지정
@@ -446,10 +487,13 @@ function setupWidgetUI(urlParams) {
         // 라이브러리로 직접(오프라인) SVG QR 코드를 생성해서 넣음
         if (qrImg && linkUrl) {
             try {
-                const qr = qrcode(0, 'M'); // typeNumber 0 = 자동 크기 선택
+                // 중앙 프로필 사진이 일부 모듈을 가려도 인식률을 유지하도록 오류 복원 수준을 H로 사용
+                const qr = qrcode(0, 'H'); // typeNumber 0 = 자동 크기 선택
                 qr.addData(linkUrl);
                 qr.make();
+                const profileImage = document.getElementById('qr-profile-image');
                 qrImg.innerHTML = qr.createSvgTag({ scalable: true, margin: 0 });
+                if (profileImage) qrImg.appendChild(profileImage);
             } catch (e) {
                 console.error("QR 코드 생성 실패:", e);
             }
@@ -517,6 +561,24 @@ function getCommentKey(comment, fallbackIndex) {
     return 'c:' + nickname + ':' + fallbackIndex;
 }
 
+// 링크로 지정한 "내 댓글"의 프로필 사진을 QR 중앙에 표시
+function updateQrProfileImage(comment) {
+    const profileEl = document.getElementById('qr-profile-image');
+    if (!profileEl) return;
+
+    const profileUrl = comment && (comment.profileImage || comment.profile_image || "");
+    if (!profileUrl) {
+        profileEl.removeAttribute('src');
+        profileEl.style.display = 'none';
+        return;
+    }
+
+    profileEl.onload = () => { profileEl.style.display = 'block'; };
+    profileEl.onerror = () => { profileEl.style.display = 'none'; };
+    if (profileEl.getAttribute('src') !== profileUrl) profileEl.src = profileUrl;
+    else if (profileEl.complete && profileEl.naturalWidth > 0) profileEl.style.display = 'block';
+}
+
 // 3. 댓글 목록 업데이트 (지우고 다시 그리는 대신, 기존 엘리먼트 재사용 + 순서만 이동)
 function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown, pinEnabled, pinNicknames) {
     const listContainer = document.getElementById("comment-list");
@@ -544,6 +606,8 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
             pinnedComment = comment;
         }
     });
+
+    updateQrProfileImage(pinnedComment);
 
     // 추천수(좋아요) 기준 내림차순 정렬. 내 댓글도 여기 포함시켜서 아래 목록에도 실제 순위 자리에 나오게 함
     const rankedComments = [...comments].sort((a, b) => (b.likeCnt ?? 0) - (a.likeCnt ?? 0));
