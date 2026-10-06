@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <title>업순위 오버레이 생성기</title>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -31,7 +32,9 @@
                 radial-gradient(circle at 12% 0%, rgba(91,95,245,0.08), transparent 45%),
                 radial-gradient(circle at 100% 20%, rgba(91,95,245,0.06), transparent 40%);
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
             min-height: 100vh;
             margin: 0;
             padding: 40px 20px;
@@ -58,6 +61,45 @@
             width: 100%;
             max-width: 520px;
         }
+
+        .support-banner {
+            display: grid;
+            grid-template-columns: 58px 1fr 58px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 1020px;
+            margin-bottom: 20px;
+            padding: 7px 16px;
+            border: 1px solid #72c9f4;
+            border-radius: 14px;
+            background: #8ed8f8;
+            color: #123b57;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            box-shadow: 0 8px 20px rgba(55, 157, 211, 0.18);
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+        }
+        .support-banner:hover { background: #a8e3fb; box-shadow: 0 10px 24px rgba(55, 157, 211, 0.26); }
+        .support-banner:active { transform: translateY(1px); }
+        .support-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.65);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+        }
+        .support-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scale(1.32) translateY(8%);
+            transform-origin: center;
+        }
+        .support-banner-text { text-align: center; }
 
         /* ---------- Page header ---------- */
         .page-header { margin-bottom: 26px; }
@@ -349,16 +391,7 @@
         .preview-frame { width: 360px; max-width: 100%; height: 672px; border: 0; background: transparent; display: block; }
         .preview-hint { font-size: 12px; color: var(--ink-500); margin-top: 12px; line-height: 1.5; }
 
-        /* ---------- Footer ---------- */
-        .footer-area { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); text-align: center; }
-        .soop-link-btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-            padding: 10px 20px; border-radius: 8px; background-color: var(--ink-900); color: #fff;
-            text-decoration: none; font-weight: 600; font-size: 13.5px; transition: background 0.2s;
-        }
-        .soop-link-btn:hover { background-color: #333; }
-        .soop-icon { width: 18px; height: 18px; border-radius: 4px; }
-        .footer-credit { margin: 12px 0 0; font-size: 12px; color: var(--ink-300); }
+        .preview-frame.horizontal { height: 220px; }
 
         @media (max-width: 480px) {
             .container, .preview-panel { padding: 22px 18px; }
@@ -366,6 +399,11 @@
     </style>
 </head>
 <body>
+    <a class="support-banner" href="https://www.sooplive.com/station/gosegu2/post/208975797#comment_noti122707407" target="_blank" rel="noopener noreferrer">
+        <span class="support-avatar"><img src="hatbi-avatar-cutout.png" alt="햇비"></span>
+        <span class="support-banner-text">Made by 햇비 · SBO 업 도와주기</span>
+        <span aria-hidden="true"></span>
+    </a>
     <div class="page-wrapper">
         <div class="container">
             <div class="page-header">
@@ -426,9 +464,9 @@
                 <div class="form-group">
                     <label>댓글 표시 방식</label>
                     <div class="radio-group">
-                        <label><input type="radio" name="mode" value="top" checked onchange="toggleModeInputs()"> 1위부터 모두 보기</label>
+                        <label><input type="radio" name="mode" value="mine" checked onchange="toggleModeInputs()"> 내 순위만</label>
+                        <label><input type="radio" name="mode" value="top" onchange="toggleModeInputs()"> 1위부터 모두 보기</label>
                         <label><input type="radio" name="mode" value="around" onchange="toggleModeInputs()"> 내 순위 주변만</label>
-                        <label><input type="radio" name="mode" value="mine" onchange="toggleModeInputs()"> 내 순위만</label>
                     </div>
                 </div>
 
@@ -615,13 +653,6 @@
                 <span id="generatedUrl"></span>
             </div>
 
-            <div class="footer-area">
-                <a class="soop-link-btn" href="https://www.sooplive.com/station/htvv2i" target="_blank" rel="noopener noreferrer">
-                    <img src="https://www.google.com/s2/favicons?domain=sooplive.com&sz=64" alt="SOOP" class="soop-icon">
-                    <span>숲 채널 바로가기</span>
-                </a>
-                <p class="footer-credit">Made by 햇뵹</p>
-            </div>
         </div>
 
         <div class="preview-panel" id="previewPanel">
@@ -735,6 +766,9 @@
             const previewPanel = document.getElementById('previewPanel');
             const link = document.getElementById('targetLink').value.trim();
             const frame = document.getElementById('previewFrame');
+            const qrMode = document.querySelector('input[name="qrMode"]:checked').value;
+            const qrSize = parseInt(document.getElementById('qrSize').value, 10);
+            frame.classList.toggle('horizontal', qrMode === 'on' && qrSize <= 50);
 
             if (!link) {
                 previewPanel.style.display = 'none';
