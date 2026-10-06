@@ -438,7 +438,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>컨텐츠 제목</label>
+                    <label>컨텐츠 제목 (선택)</label>
                     <input type="text" id="contentTitle" placeholder="예: 8월 업순위 이벤트">
                 </div>
 
@@ -653,7 +653,11 @@
 
             const baseUrl = window.location.origin + '/obs_widget_v6.html';
 
-            let finalUrl = `${baseUrl}?title=${encodeURIComponent(contentTitle)}&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&color=${encodeURIComponent(pointColor)}`;
+            let finalUrl = `${baseUrl}?url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&color=${encodeURIComponent(pointColor)}`;
+
+            if (contentTitle.trim()) {
+                finalUrl += `&title=${encodeURIComponent(contentTitle.trim())}`;
+            }
 
             const pinNicknames = pinNicknamesRaw.split(',').map(s => s.trim()).filter(Boolean);
             if (pinNicknames.length > 0) {
