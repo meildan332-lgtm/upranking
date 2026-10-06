@@ -205,7 +205,7 @@
         /* ---------- Color swatches ---------- */
         .color-swatch-group { display: flex; gap: 12px; flex-wrap: wrap; }
         .color-swatch { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; }
-        .color-swatch input { display: none; }
+        .color-swatch input[type="radio"] { display: none; }
         .swatch-dot {
             display: block;
             width: 28px;
@@ -218,6 +218,24 @@
         .color-swatch input:checked + .swatch-dot {
             transform: scale(1.15);
             box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--swatch-color);
+        }
+        .custom-color-input {
+            width: 32px;
+            height: 32px;
+            padding: 0;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            background: transparent;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            cursor: pointer;
+            overflow: hidden;
+        }
+        .custom-color-input::-webkit-color-swatch-wrapper { padding: 0; }
+        .custom-color-input::-webkit-color-swatch { border: 0; border-radius: 50%; }
+        .custom-color-input::-moz-color-swatch { border: 0; border-radius: 50%; }
+        .color-swatch input[type="radio"]:checked + .custom-color-input {
+            transform: scale(1.12);
+            box-shadow: 0 0 0 3px #fff, 0 0 0 5px #8a8fa3;
         }
         .swatch-label { font-size: 11px; color: var(--ink-500); }
 
@@ -502,7 +520,7 @@
                             <span class="swatch-dot"></span>
                             <span class="swatch-label">보라</span>
                         </label>
-                        <label class="color-swatch" style="--swatch-color:#FF375F;">
+                        <label class="color-swatch" style="--swatch-color:#FF8FB1;">
                             <input type="radio" name="pointColor" value="pink">
                             <span class="swatch-dot"></span>
                             <span class="swatch-label">분홍</span>
@@ -511,6 +529,11 @@
                             <input type="radio" name="pointColor" value="black">
                             <span class="swatch-dot"></span>
                             <span class="swatch-label">검정</span>
+                        </label>
+                        <label class="color-swatch">
+                            <input type="radio" name="pointColor" value="custom" id="customColorRadio">
+                            <input type="color" id="customPointColor" class="custom-color-input" value="#7C8CFF" aria-label="사용자 지정 RGB 색상" oninput="selectCustomPointColor()" onclick="selectCustomPointColor()">
+                            <span class="swatch-label">RGB 선택</span>
                         </label>
                     </div>
                 </div>
@@ -629,12 +652,19 @@
             updatePreview();
         }
 
+        function selectCustomPointColor() {
+            document.getElementById('customColorRadio').checked = true;
+        }
+
         function buildWidgetUrl() {
             const contentTitle = document.getElementById('contentTitle').value;
             const font = document.getElementById('fontSelect').value;
             const designMode = document.querySelector('input[name="designMode"]:checked').value;
             const themeMode = document.querySelector('input[name="themeMode"]:checked').value;
-            const pointColor = document.querySelector('input[name="pointColor"]:checked').value;
+            const selectedPointColor = document.querySelector('input[name="pointColor"]:checked').value;
+            const pointColor = selectedPointColor === 'custom'
+                ? document.getElementById('customPointColor').value
+                : selectedPointColor;
             const link = document.getElementById('targetLink').value;
             const cutoff = document.getElementById('cutoff').value;
             const deadline = document.getElementById('deadline').value;

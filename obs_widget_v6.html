@@ -360,12 +360,24 @@ const ACCENT_COLORS = {
     green: { hex: '#34C759', rgb: '52, 199, 89' },
     blue: { hex: '#0A84FF', rgb: '10, 132, 255' },
     purple: { hex: '#AF52DE', rgb: '175, 82, 222' },
-    pink: { hex: '#FF375F', rgb: '255, 55, 95' },
+    pink: { hex: '#FF8FB1', rgb: '255, 143, 177' },
     black: { hex: '#48484A', rgb: '72, 72, 74' }
 };
 
 function applyAccentColor(colorKey) {
-    const preset = ACCENT_COLORS[colorKey] || ACCENT_COLORS.red;
+    let preset = ACCENT_COLORS[colorKey];
+
+    if (!preset && /^#[0-9a-f]{6}$/i.test(colorKey)) {
+        const hex = colorKey.toUpperCase();
+        const rgb = [
+            parseInt(hex.slice(1, 3), 16),
+            parseInt(hex.slice(3, 5), 16),
+            parseInt(hex.slice(5, 7), 16)
+        ].join(', ');
+        preset = { hex, rgb };
+    }
+
+    preset = preset || ACCENT_COLORS.red;
     document.documentElement.style.setProperty('--accent-color', preset.hex);
     document.documentElement.style.setProperty('--accent-color-rgb', preset.rgb);
 }
