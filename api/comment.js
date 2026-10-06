@@ -12,9 +12,9 @@ export default async function handler(req, res) {
   // 1. 위젯에서 넘겨준 일반 게시글 주소 가져오기
   const { url, highlight, overlayAccess } = req.query;
 
-  if (overlayAccess !== '85673ac345154e0dbf9a798b80e102f0') {
+  if (overlayAccess !== 'a1d5c2a1b2b744d3bacb0bf8c32e1bd3') {
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(403).json({ error: "올바른 오버레이 접근 파라미터가 필요합니다." });
+    return res.status(404).json({ error: "페이지를 찾을 수 없습니다." });
   }
 
   if (!url) {

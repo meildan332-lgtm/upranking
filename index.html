@@ -7,7 +7,7 @@
     <title>업순위 오버레이 생성기</title>
     <script>
         (function () {
-            const accessGranted = new URLSearchParams(window.location.search).get('access') === 'edabb52bafad44398c51a93fdf85651b';
+            const accessGranted = new URLSearchParams(window.location.search).get('access') === 'a9b22c3580a24ae6aa58f89ad4d1eca8';
             document.documentElement.dataset.access = accessGranted ? 'granted' : 'denied';
 
             if (!accessGranted) {
@@ -721,7 +721,7 @@
 
             const baseUrl = window.location.origin + '/obs_widget_v6.html';
 
-            let finalUrl = `${baseUrl}?overlayAccess=85673ac345154e0dbf9a798b80e102f0&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&color=${encodeURIComponent(pointColor)}`;
+            let finalUrl = `${baseUrl}?overlayAccess=a1d5c2a1b2b744d3bacb0bf8c32e1bd3&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&color=${encodeURIComponent(pointColor)}`;
 
             if (contentTitle.trim()) {
                 finalUrl += `&title=${encodeURIComponent(contentTitle.trim())}`;

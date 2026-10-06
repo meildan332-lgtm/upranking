@@ -6,12 +6,34 @@
     <link rel="icon" type="image/png" href="/favicon.png">
     <title>OBS 댓글 랭킹 위젯 v6</title>
     <script>
-        const OVERLAY_ACCESS_GRANTED = new URLSearchParams(window.location.search).get('overlayAccess') === '85673ac345154e0dbf9a798b80e102f0';
+        const OVERLAY_ACCESS_GRANTED = new URLSearchParams(window.location.search).get('overlayAccess') === 'a1d5c2a1b2b744d3bacb0bf8c32e1bd3';
         document.documentElement.dataset.overlayAccess = OVERLAY_ACCESS_GRANTED ? 'granted' : 'denied';
+
+        if (!OVERLAY_ACCESS_GRANTED) {
+            document.addEventListener('DOMContentLoaded', function () {
+                document.body.innerHTML = '<main class="access-denied-page"><div><strong>404</strong><p>페이지를 찾을 수 없습니다.</p></div></main>';
+                document.documentElement.dataset.overlayAccess = 'blocked';
+            });
+        }
     </script>
     <style>
 
-        html[data-overlay-access="denied"] body { display: none !important; }
+        html[data-overlay-access="denied"] body { visibility: hidden; }
+        html[data-overlay-access="blocked"] body {
+            visibility: visible;
+            margin: 0;
+            background: #ffffff;
+            color: #1a1d29;
+            font-family: Arial, sans-serif;
+        }
+        .access-denied-page {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            text-align: center;
+        }
+        .access-denied-page strong { display: block; font-size: 72px; }
+        .access-denied-page p { margin: 12px 0 0; font-size: 18px; }
 
         /* 맨 위 고정 댓글 강조 디자인 */
         .highlight-item {
