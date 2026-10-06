@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/favicon.png">
     <title>업순위 오버레이 생성기</title>
+    <script>
+        (function () {
+            const accessGranted = new URLSearchParams(window.location.search).get('access') === 'edabb52bafad44398c51a93fdf85651b';
+            document.documentElement.dataset.access = accessGranted ? 'granted' : 'denied';
+
+            if (!accessGranted) {
+                document.addEventListener('DOMContentLoaded', function () {
+                    document.body.innerHTML = '<main class="access-denied-page"><div><strong>404</strong><p>페이지를 찾을 수 없습니다.</p></div></main>';
+                    document.documentElement.dataset.access = 'blocked';
+                });
+            }
+        })();
+    </script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
@@ -24,6 +37,19 @@
         }
 
         * { box-sizing: border-box; }
+
+        html[data-access="denied"] body { visibility: hidden; }
+
+        .access-denied-page {
+            display: grid;
+            place-items: center;
+            width: 100%;
+            min-height: calc(100vh - 80px);
+            text-align: center;
+            color: var(--ink-700);
+        }
+        .access-denied-page strong { display: block; font-size: 56px; color: var(--ink-900); }
+        .access-denied-page p { margin: 8px 0 0; font-size: 15px; }
 
         body {
             font-family: 'Pretendard', sans-serif;
