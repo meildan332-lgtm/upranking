@@ -596,6 +596,11 @@ async function fetchRealComments() {
         const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}${highlightParam}&overlayAccess=${encodeURIComponent(overlayAccess)}`;
 
         const response = await fetch(apiUrl);
+        if (response.status === 401 || response.status === 403) {
+            document.documentElement.style.display = 'none';
+            document.body.innerHTML = '';
+            return;
+        }
         if (!response.ok) throw new Error(`서버 통신 오류 (${response.status})`);
 
         const data = await response.json();
