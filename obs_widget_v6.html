@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/favicon.png">
     <title>OBS 댓글 랭킹 위젯 v6</title>
+    <script>
+        const OVERLAY_ACCESS_GRANTED = new URLSearchParams(window.location.search).get('overlayAccess') === '85673ac345154e0dbf9a798b80e102f0';
+        document.documentElement.dataset.overlayAccess = OVERLAY_ACCESS_GRANTED ? 'granted' : 'denied';
+    </script>
     <style>
+
+        html[data-overlay-access="denied"] body { display: none !important; }
 
         /* 맨 위 고정 댓글 강조 디자인 */
         .highlight-item {
@@ -552,6 +558,11 @@ function setupWidgetUI(urlParams) {
 
 // 2. 서버에서 실시간 댓글 데이터 가져오기
 async function fetchRealComments() {
+    if (!OVERLAY_ACCESS_GRANTED) {
+        console.warn("OBS 위젯: 올바른 접근 파라미터가 없어 표시와 갱신이 차단되었습니다.");
+        return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
 
     if (!window.uiSetupDone) {
@@ -941,9 +952,11 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// 5초마다 새로고침
-setInterval(fetchRealComments, 5000);
-fetchRealComments();
+// 올바른 접근 파라미터가 있을 때만 최초 조회 및 5초 갱신 시작
+if (OVERLAY_ACCESS_GRANTED) {
+    setInterval(fetchRealComments, 5000);
+    fetchRealComments();
+}
 </script>
 </body>
 </html>
