@@ -230,10 +230,10 @@
         /* ===== 디자인2: 귀엽고 통통 튀는 팝 스타일 ===== */
         body.design-ios #widget-container {
             position: relative;
-            border: 3px solid rgba(var(--accent-color-rgb), 0.58);
+            border: none;
             border-radius: 36px;
             background: rgba(26, 22, 38, 0.86);
-            box-shadow: 0 12px 0 rgba(0, 0, 0, 0.18), 0 22px 36px rgba(0, 0, 0, 0.34);
+            box-shadow: none;
             overflow: hidden;
         }
         body.design-ios .widget-header { align-items: center; padding: 4px 4px 2px; }
@@ -243,7 +243,7 @@
             padding: 16px 20px;
             border: 2px solid rgba(255, 255, 255, 0.13);
             background: linear-gradient(135deg, rgba(56, 49, 72, 0.96), rgba(35, 31, 48, 0.96));
-            box-shadow: 0 7px 0 rgba(0, 0, 0, 0.22), 0 12px 22px rgba(0, 0, 0, 0.22);
+            box-shadow: none;
         }
         body.design-ios .rank-col { width: 44px; }
         body.design-ios .rank-number {
@@ -257,7 +257,7 @@
             color: var(--text-primary);
             font-size: 26px;
         }
-        body.design-ios .profile-pic { border: 3px solid rgba(255, 255, 255, 0.82); box-shadow: 0 4px 0 rgba(0, 0, 0, 0.2); }
+        body.design-ios .profile-pic { border: 3px solid rgba(255, 255, 255, 0.82); box-shadow: none; }
         body.design-ios .nickname { font-size: 18px; letter-spacing: -0.02em; }
         body.design-ios .up-col {
             background: rgba(var(--accent-color-rgb), 0.18);
@@ -265,27 +265,28 @@
             padding: 7px 12px;
             border-radius: 999px;
             font-size: 18px;
-            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.16);
+            box-shadow: none;
         }
         body.design-ios .pinned-comment {
             border-radius: 26px;
             box-shadow: none;
         }
         body.design-ios .cutoff-text { border: 3px solid rgba(255,255,255,.8); border-radius: 999px; padding: 6px 18px; box-shadow: none; }
-        body.design-ios .qr-section { border: 2px solid rgba(var(--accent-color-rgb), .5); border-radius: 26px; box-shadow: 0 7px 0 rgba(0, 0, 0, .14); }
-        body.design-ios .qr-image { border: 4px solid #fff; border-radius: 22px; box-shadow: 0 6px 0 rgba(0, 0, 0, .16); }
+        body.design-ios .qr-section { border: 2px solid rgba(var(--accent-color-rgb), .5); border-radius: 26px; box-shadow: none; }
+        body.design-ios .qr-image { border: 4px solid #fff; border-radius: 22px; box-shadow: none; }
+        body.design-ios .qr-profile-image { box-shadow: none; }
         body.design-ios .deadline-text { border: 2px solid rgba(var(--accent-color-rgb), .55); border-radius: 999px; box-shadow: none; }
         body.design-ios .highlight-badge { border: 2px solid rgba(255,255,255,.78); border-radius: 999px; }
 
         /* 디자인2(아이폰 스타일) + 라이트 모드 조합: 유리 배경을 밝은 톤으로 전환 */
         body.design-ios.theme-light #widget-container {
             background: rgba(255, 249, 253, 0.94);
-            box-shadow: 0 12px 0 rgba(82, 60, 92, 0.1), 0 22px 36px rgba(82, 60, 92, 0.15);
+            box-shadow: none;
         }
         body.design-ios.theme-light .comment-box {
             border: 2px solid rgba(var(--accent-color-rgb), 0.24);
             background: linear-gradient(135deg, #ffffff, color-mix(in srgb, var(--accent-color) 7%, white));
-            box-shadow: 0 7px 0 rgba(82, 60, 92, 0.08), 0 12px 22px rgba(82, 60, 92, 0.1);
+            box-shadow: none;
         }
         body.design-ios.theme-light .profile-pic { border: 2px solid rgba(20, 20, 30, 0.1); }
         body.design-ios.theme-light .pinned-comment {
