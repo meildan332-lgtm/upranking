@@ -119,6 +119,8 @@
 
         #widget-main { display: flex; flex-direction: column; gap: 12px; }
         #ranking-section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+        body.qr-bottom #qr-section { order: 2; }
+        body.qr-bottom #ranking-section { order: 1; }
 
         body.layout-horizontal #scale-stage {
             width: 900px;
@@ -493,13 +495,14 @@ function setupWidgetUI(urlParams) {
     const deadline = urlParams.get('deadline');
     const font = urlParams.get('font') || 'pretendard';
     const design = urlParams.get('design') || 'default';
-    const theme = urlParams.get('theme') || 'dark';
+    const theme = urlParams.get('theme') || 'light';
     const color = urlParams.get('color') || 'red';
     const qrMode = urlParams.get('qr');
+    const qrPosition = urlParams.get('qrpos') || 'top';
     const qrText = urlParams.get('qrtext');
     const qrSize = urlParams.get('qrsize') || '75';
     const qrFontSize = urlParams.get('qrFontSize') || '15';
-    const qrFontColor = urlParams.get('qrFontColor') || '#dddddd';
+    const qrFontColor = urlParams.get('qrFontColor') || '#3d4152';
     const qrLinkMode = urlParams.get('qrLinkMode') || 'auto';
     const qrCustomLink = urlParams.get('qrCustomLink') || '';
     const sizePercent = parseInt(qrSize, 10);
@@ -510,6 +513,7 @@ function setupWidgetUI(urlParams) {
     applyThemePreset(theme);
     applyAccentColor(color);
     document.body.classList.toggle('layout-horizontal', horizontalLayout);
+    document.body.classList.toggle('qr-bottom', qrPosition === 'bottom');
 
     const headerEl = document.querySelector('.widget-header');
     const titleEl = document.getElementById("widget-title-display");

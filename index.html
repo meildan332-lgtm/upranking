@@ -88,28 +88,6 @@
             max-width: 520px;
         }
 
-        .support-banner {
-            display: block;
-            width: 100%;
-            max-width: 1020px;
-            aspect-ratio: 6 / 1;
-            margin-bottom: 20px;
-            border-radius: 14px;
-            text-decoration: none;
-            overflow: hidden;
-            box-shadow: 0 8px 20px rgba(55, 157, 211, 0.18);
-            transition: transform 0.15s, box-shadow 0.2s;
-        }
-        .support-banner:hover { box-shadow: 0 10px 24px rgba(55, 157, 211, 0.3); }
-        .support-banner:active { transform: translateY(1px); }
-        .support-banner img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center;
-        }
-
         /* ---------- Page header ---------- */
         .page-header { margin-bottom: 26px; }
         .page-header .eyebrow {
@@ -408,9 +386,6 @@
     </style>
 </head>
 <body>
-    <a class="support-banner" href="https://www.sooplive.com/station/gosegu2/post/208975797#comment_noti122707407" target="_blank" rel="noopener noreferrer">
-        <img src="hatbi-sbo-baseball-banner.png" alt="made by 햇비 SBO 도와주기">
-    </a>
     <div class="page-wrapper">
         <div class="container">
             <div class="page-header">
@@ -527,8 +502,8 @@
                 <div class="form-group">
                     <label>테마</label>
                     <div class="radio-group">
-                        <label><input type="radio" name="themeMode" value="dark" checked> 다크모드</label>
-                        <label><input type="radio" name="themeMode" value="light"> 라이트모드</label>
+                        <label><input type="radio" name="themeMode" value="dark"> 다크모드</label>
+                        <label><input type="radio" name="themeMode" value="light" checked> 라이트모드</label>
                     </div>
                 </div>
 
@@ -603,6 +578,15 @@
 
                 <div id="qrSettingsBox">
                     <div class="form-group">
+                        <label>QR 코드 위치</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="qrPosition" value="top" checked> 위</label>
+                            <label><input type="radio" name="qrPosition" value="bottom"> 아래</label>
+                        </div>
+                        <p class="field-hint">QR 크기가 50% 이하인 가로 배치에서는 위/아래가 각각 왼쪽/오른쪽으로 적용돼요.</p>
+                    </div>
+
+                    <div class="form-group">
                         <label>QR 코드 연결 링크</label>
                         <div class="radio-group">
                             <label><input type="radio" name="qrLinkMode" value="auto" checked onchange="toggleQrLinkInput()"> 댓글 링크 사용</label>
@@ -638,7 +622,7 @@
                         </div>
                         <div class="form-group">
                             <label>안내 문구 글자 색상</label>
-                            <input type="color" id="qrFontColor" value="#dddddd">
+                            <input type="color" id="qrFontColor" value="#3d4152">
                         </div>
                     </div>
                 </div>
@@ -710,6 +694,7 @@
             const pinNicknamesRaw = document.getElementById('pinNicknames').value;
             const mode = document.querySelector('input[name="mode"]:checked').value;
             const qrMode = document.querySelector('input[name="qrMode"]:checked').value;
+            const qrPosition = document.querySelector('input[name="qrPosition"]:checked').value;
             const qrText = document.getElementById('qrText').value;
             const qrSize = document.getElementById('qrSize').value;
             const qrLinkMode = document.querySelector('input[name="qrLinkMode"]:checked').value;
@@ -739,10 +724,11 @@
             if (deadline) finalUrl += `&deadline=${deadline}`;
 
             if (qrMode === 'on') {
+                finalUrl += `&qrpos=${encodeURIComponent(qrPosition)}`;
                 finalUrl += `&qrtext=${encodeURIComponent(qrText.trim())}`;
                 finalUrl += `&qrsize=${encodeURIComponent(qrSize)}`;
                 finalUrl += `&qrFontSize=${encodeURIComponent(qrFontSize || '15')}`;
-                finalUrl += `&qrFontColor=${encodeURIComponent(qrFontColor || '#dddddd')}`;
+                finalUrl += `&qrFontColor=${encodeURIComponent(qrFontColor || '#3d4152')}`;
                 finalUrl += `&qrLinkMode=${encodeURIComponent(qrLinkMode)}`;
                 if (qrLinkMode === 'custom' && qrCustomLink.trim()) {
                     finalUrl += `&qrCustomLink=${encodeURIComponent(qrCustomLink.trim())}`;
