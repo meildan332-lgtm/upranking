@@ -592,7 +592,8 @@ async function fetchRealComments() {
     try {
         const cleanUrl = targetUrl.split('#')[0];
         const highlightParam = targetCommentId ? `&highlight=${encodeURIComponent(targetCommentId)}` : '';
-        const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}${highlightParam}`;
+        const overlayAccess = urlParams.get('overlayAccess') || '';
+        const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}${highlightParam}&overlayAccess=${encodeURIComponent(overlayAccess)}`;
 
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error(`서버 통신 오류 (${response.status})`);
