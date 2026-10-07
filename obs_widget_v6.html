@@ -162,8 +162,8 @@
 
         /* ===== 디자인1: 순위 · 프로필 · 닉네임 · 추천수만 표시 ===== */
         body:not(.design-ios) .comment-box {
-            min-height: 52px;
-            padding: 4px 14px 4px 4px;
+            min-height: 60px;
+            padding: 0 16px 0 0;
             border-radius: 10px;
             overflow: hidden;
             gap: 0;
@@ -180,21 +180,21 @@
             font-weight: 800;
         }
         body:not(.design-ios) .profile-pic {
-            align-self: center;
-            width: 44px;
-            height: 44px;
-            min-height: 44px;
+            align-self: stretch;
+            width: 60px;
+            height: auto;
+            min-height: 58px;
             margin-right: 0;
             border: 0;
-            border-radius: 7px;
+            border-radius: 0;
             object-fit: cover;
-            flex: 0 0 44px;
+            flex: 0 0 60px;
             order: 1;
         }
         body:not(.design-ios) .info-col {
             min-width: 0;
             justify-content: center;
-            flex: 0 1 auto;
+            flex: 1 1 auto;
             padding-left: 12px;
             border-left: 1px solid color-mix(in srgb, var(--text-primary) 24%, transparent);
             order: 3;
