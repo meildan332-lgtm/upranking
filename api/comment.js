@@ -10,12 +10,8 @@ export default async function handler(req, res) {
   }
 
   // 1. 위젯에서 넘겨준 일반 게시글 주소 가져오기
-  const { url, highlight, overlayAccess } = req.query;
-
-  if (overlayAccess !== 'a1d5c2a1b2b744d3bacb0bf8c32e1bd3') {
-    res.setHeader('Cache-Control', 'no-store');
-    return res.status(404).json({ error: "페이지를 찾을 수 없습니다." });
-  }
+  const url = Array.isArray(req.query.url) ? req.query.url[0] : req.query.url;
+  const highlight = Array.isArray(req.query.highlight) ? req.query.highlight[0] : req.query.highlight;
 
   if (!url) {
     return res.status(400).json({ error: "URL 파라미터가 필요합니다." });
@@ -26,7 +22,7 @@ export default async function handler(req, res) {
     // 입력 예시: https://www.sooplive.com/station/ecvhao/post/201137725
     // match[1] = ecvhao (채널명)
     // match[2] = 201137725 (게시물 번호)
-  const cleanUrl = url.split('#')[0]; // # 꼬리표 제거
+    const cleanUrl = String(url).split('#')[0]; // # 꼬리표 제거
     const match = cleanUrl.match(/\/station\/([a-zA-Z0-9_-]+)\/post\/(\d+)/);
     
     const channelId = match ? match[1] : null;
@@ -48,13 +44,15 @@ export default async function handler(req, res) {
       method: 'GET',
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': url,
+        'Referer': cleanUrl,
         'Accept': 'application/json, text/plain, */*'
       }
     });
 
     if (!response.ok) {
-      throw new Error(`API 요청 실패: ${response.status}`);
+      const responseText = await response.text();
+      console.error(`SOOP API 요청 실패 (${response.status}):`, responseText.slice(0, 500));
+      return res.status(response.status).json({ error: `SOOP API 요청 실패 (${response.status})` });
     }
 
     // SOOP 서버가 준 순수 JSON 데이터
@@ -66,6 +64,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error("크롤링 에러:", error);
+    res.setHeader('Cache-Control', 'no-store');
     res.status(500).json({ error: "서버에서 데이터를 가져오는 중 문제가 발생했습니다." });
   }
 }

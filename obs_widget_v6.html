@@ -7,23 +7,6 @@
     <title>OBS 댓글 랭킹 위젯 v6</title>
     <style>
 
-        html[data-overlay-access="denied"] body { visibility: hidden; }
-        html[data-overlay-access="blocked"] body {
-            visibility: visible;
-            margin: 0;
-            background: #ffffff;
-            color: #1a1d29;
-            font-family: Arial, sans-serif;
-        }
-        .access-denied-page {
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            text-align: center;
-        }
-        .access-denied-page strong { display: block; font-size: 72px; }
-        .access-denied-page p { margin: 12px 0 0; font-size: 18px; }
-
         /* 맨 위 고정 댓글 강조 디자인 */
         .highlight-item {
             background-color: #ffeb3b !important; /* 노란색 배경 (원하는 색으로 변경 가능) */
@@ -581,7 +564,8 @@ async function fetchRealComments() {
         return;
     }
 
-    const match = targetUrl.match(/#comment_noti(\d+)/);
+    const match = targetUrl.match(/(?:#|[?&])comment_noti_?(\d+)/i)
+        || targetUrl.match(/[?&](?:pCommentNo|commentNo)=(\d+)/i);
     const targetCommentId = match ? match[1] : null;
 
     const cutoff = parseInt(urlParams.get('cutoff'), 10) || 0;
@@ -597,15 +581,17 @@ async function fetchRealComments() {
     try {
         const cleanUrl = targetUrl.split('#')[0];
         const highlightParam = targetCommentId ? `&highlight=${encodeURIComponent(targetCommentId)}` : '';
-        const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}${highlightParam}`;
+        const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}${highlightParam}&_=${Date.now()}`;
 
-        const response = await fetch(apiUrl);
-        if (response.status === 401 || response.status === 403) {
-            document.documentElement.style.display = 'none';
-            document.body.innerHTML = '';
-            return;
+        const response = await fetch(apiUrl, { cache: 'no-store' });
+        if (!response.ok) {
+            let message = `서버 통신 오류 (${response.status})`;
+            try {
+                const errorData = await response.json();
+                if (errorData && errorData.error) message += `: ${errorData.error}`;
+            } catch (_) {}
+            throw new Error(message);
         }
-        if (!response.ok) throw new Error(`서버 통신 오류 (${response.status})`);
 
         const data = await response.json();
         console.log("SOOP 원본 데이터:", data);
@@ -620,6 +606,10 @@ async function fetchRealComments() {
 
     } catch (error) {
         console.error("데이터 로드 실패:", error);
+        const listContainer = document.getElementById("comment-list");
+        if (listContainer && commentElements.size === 0) {
+            listContainer.innerHTML = `<div class="load-error" style="color:#d33; font-size:14px; line-height:1.5;">순위 데이터를 불러오지 못했습니다.<br><small>${escapeHtml(error.message)}</small></div>`;
+        }
     }
 }
 
