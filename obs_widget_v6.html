@@ -209,16 +209,23 @@
             margin-left: 12px;
             padding-left: 12px;
             font-size: 22px;
-            min-width: 74px;
+            color: #111111;
+            min-width: 100px;
             justify-content: flex-end;
             flex-shrink: 0;
-            transform: translateX(-24px);
+            transform: translateX(-36px);
             order: 4;
+        }
+        body:not(.design-ios) .up-delta-slot {
+            display: inline-flex;
+            align-items: center;
+            margin-left: 4px;
+            font-size: 14px;
+            line-height: 1;
         }
         body:not(.design-ios) .userid,
         body:not(.design-ios) .rank-delta-slot,
         body:not(.design-ios) .rank-danger,
-        body:not(.design-ios) .up-delta-slot,
         body:not(.design-ios) .highlight-badge,
         body:not(.design-ios) .thumb-icon {
             display: none !important;
@@ -238,7 +245,7 @@
         }
         body:not(.design-ios) .pinned-comment .up-col {
             font-size: 27px;
-            min-width: 88px;
+            min-width: 116px;
         }
 
         /* 커트라인: 자체 높이를 가진 행으로 분리해서 위/아래 댓글에 절대 가려지지 않도록 함 */
@@ -341,7 +348,8 @@
             font-size: 26px;
         }
         body.design-ios .profile-pic { border: none; box-shadow: none; }
-        body.design-ios .nickname { font-size: 18px; letter-spacing: -0.02em; }
+        body.design-ios .nickname { font-size: 22px; letter-spacing: -0.02em; }
+        body.design-ios .userid { display: none; }
         body.design-ios .up-col {
             font-size: 21px;
         }
