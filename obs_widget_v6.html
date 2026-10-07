@@ -162,43 +162,55 @@
 
         /* ===== 디자인1: 순위 · 프로필 · 닉네임 · 추천수만 표시 ===== */
         body:not(.design-ios) .comment-box {
-            min-height: 70px;
-            padding: 0 18px 0 0;
+            min-height: 52px;
+            padding: 4px 14px 4px 4px;
+            border-radius: 10px;
             overflow: hidden;
             gap: 0;
         }
         body:not(.design-ios) .rank-col {
-            width: 34px;
-            margin-right: 8px;
-            flex: 0 0 34px;
+            width: auto;
+            min-width: 34px;
+            margin: 0 10px;
+            flex: 0 0 auto;
             order: 2;
         }
+        body:not(.design-ios) .rank-number {
+            font-size: 19px;
+            font-weight: 800;
+        }
         body:not(.design-ios) .profile-pic {
-            align-self: stretch;
-            width: 70px;
-            height: auto;
-            min-height: 68px;
-            margin-right: 10px;
+            align-self: center;
+            width: 44px;
+            height: 44px;
+            min-height: 44px;
+            margin-right: 0;
             border: 0;
-            border-radius: 0;
+            border-radius: 7px;
             object-fit: cover;
-            flex: 0 0 70px;
+            flex: 0 0 44px;
             order: 1;
         }
         body:not(.design-ios) .info-col {
             min-width: 0;
             justify-content: center;
             flex: 0 1 auto;
+            padding-left: 12px;
+            border-left: 1px solid color-mix(in srgb, var(--text-primary) 24%, transparent);
             order: 3;
         }
         body:not(.design-ios) .nickname {
-            font-size: 21px;
+            font-size: 19px;
+            line-height: 1;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
         body:not(.design-ios) .up-col {
-            margin-left: 14px;
+            margin-left: 12px;
+            padding-left: 12px;
+            border-left: 1px solid color-mix(in srgb, var(--text-primary) 24%, transparent);
+            font-size: 19px;
             flex-shrink: 0;
             order: 4;
         }
@@ -313,7 +325,7 @@
             color: var(--text-primary);
             font-size: 26px;
         }
-        body.design-ios .profile-pic { border: 3px solid rgba(255, 255, 255, 0.82); box-shadow: none; }
+        body.design-ios .profile-pic { border: none; box-shadow: none; }
         body.design-ios .nickname { font-size: 18px; letter-spacing: -0.02em; }
         body.design-ios .up-col {
             font-size: 21px;
@@ -339,7 +351,7 @@
             background: linear-gradient(135deg, #ffffff, color-mix(in srgb, var(--accent-color) 7%, white));
             box-shadow: none;
         }
-        body.design-ios.theme-light .profile-pic { border: 2px solid rgba(20, 20, 30, 0.1); }
+        body.design-ios.theme-light .profile-pic { border: none; }
         body.design-ios.theme-light .pinned-comment {
             border: 2px solid var(--accent-color, #00BFFF);
             background-color: var(--pinned-bg);
