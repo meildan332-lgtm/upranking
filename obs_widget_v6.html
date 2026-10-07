@@ -163,7 +163,7 @@
         /* ===== 디자인1: 순위 · 프로필 · 닉네임 · 추천수만 표시 ===== */
         body:not(.design-ios) .comment-box {
             min-height: 60px;
-            padding: 0 16px 0 0;
+            padding: 0 34px 0 0;
             border-radius: 10px;
             overflow: hidden;
             gap: 0;
@@ -225,6 +225,11 @@
         body:not(.design-ios) .pinned-comment {
             border: 1px solid var(--card-border);
             min-height: 76px;
+        }
+        body:not(.design-ios) .pinned-comment .profile-pic {
+            width: 76px;
+            min-height: 74px;
+            flex-basis: 76px;
         }
         body:not(.design-ios) .pinned-comment .rank-number,
         body:not(.design-ios) .pinned-comment .nickname,
