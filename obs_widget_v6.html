@@ -163,7 +163,7 @@
         /* ===== 디자인1: 순위 · 프로필 · 닉네임 · 추천수만 표시 ===== */
         body:not(.design-ios) .comment-box {
             min-height: 70px;
-            padding: 0 18px 0 20px;
+            padding: 0 18px 0 0;
             overflow: hidden;
             gap: 0;
         }
@@ -171,32 +171,40 @@
             width: 42px;
             margin-right: 14px;
             flex: 0 0 42px;
+            order: 2;
         }
         body:not(.design-ios) .profile-pic {
             align-self: stretch;
             width: 70px;
             height: auto;
             min-height: 68px;
-            margin-right: 16px;
+            margin-right: 14px;
             border: 0;
             border-radius: 0;
             object-fit: cover;
             flex: 0 0 70px;
+            order: 1;
         }
         body:not(.design-ios) .info-col {
             min-width: 0;
             justify-content: center;
+            order: 3;
         }
         body:not(.design-ios) .nickname {
+            font-size: 21px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+        body:not(.design-ios) .up-col {
+            order: 4;
         }
         body:not(.design-ios) .userid,
         body:not(.design-ios) .rank-delta-slot,
         body:not(.design-ios) .rank-danger,
         body:not(.design-ios) .up-delta-slot,
-        body:not(.design-ios) .highlight-badge {
+        body:not(.design-ios) .highlight-badge,
+        body:not(.design-ios) .thumb-icon {
             display: none !important;
         }
         body:not(.design-ios) .pinned-comment {
