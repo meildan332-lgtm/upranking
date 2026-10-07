@@ -230,12 +230,9 @@
             transform: translateY(-50%);
         }
         body:not(.design-ios) .thumb-icon {
-            color: #111111;
-            fill: none;
-            stroke: #111111;
-            stroke-width: 2.2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
+            color: var(--accent-color, #FF3B30);
+            fill: currentColor;
+            stroke: none;
         }
         body:not(.design-ios) .userid,
         body:not(.design-ios) .rank-delta-slot,
@@ -563,7 +560,7 @@ function applyFontPreset(fontId) {
 function setupWidgetUI(urlParams) {
     const title = urlParams.get('title');
     const deadline = urlParams.get('deadline');
-    const font = urlParams.get('font') || 'pretendard';
+    const font = urlParams.get('font') || 'gmarket';
     const design = urlParams.get('design') || 'default';
     const theme = urlParams.get('theme') || 'light';
     const color = urlParams.get('color') || 'red';
