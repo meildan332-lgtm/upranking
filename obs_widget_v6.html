@@ -200,7 +200,7 @@
         }
         body:not(.design-ios) .nickname {
             font-size: 19px;
-            line-height: 1;
+            line-height: 1.3;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -546,7 +546,7 @@ const FONT_PRESETS = {
 };
 
 function applyFontPreset(fontId) {
-    const preset = FONT_PRESETS[fontId] || FONT_PRESETS.pretendard;
+    const preset = FONT_PRESETS[fontId] || FONT_PRESETS.gmarket;
     if (preset.fontFace && !document.querySelector(`style[data-font-id="${fontId}"]`)) {
         const styleTag = document.createElement('style');
         styleTag.setAttribute('data-font-id', fontId);
