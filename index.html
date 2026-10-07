@@ -222,6 +222,12 @@
             transform: scale(1.15);
             box-shadow: 0 0 0 3px #fff, 0 0 0 5px var(--swatch-color);
         }
+        .color-swatch input[value="none"] + .swatch-dot {
+            border: 1.5px solid #c7cad4;
+        }
+        .color-swatch input[value="none"]:checked + .swatch-dot {
+            box-shadow: 0 0 0 3px #fff, 0 0 0 5px #6b7086;
+        }
         .custom-color-input {
             width: 32px;
             height: 32px;
