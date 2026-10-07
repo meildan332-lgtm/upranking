@@ -5,19 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/favicon.png">
     <title>업순위 오버레이 생성기</title>
-    <script>
-        (function () {
-            const accessGranted = new URLSearchParams(window.location.search).get('access') === 'a9b22c3580a24ae6aa58f89ad4d1eca8';
-            document.documentElement.dataset.access = accessGranted ? 'granted' : 'denied';
-
-            if (!accessGranted) {
-                document.addEventListener('DOMContentLoaded', function () {
-                    document.body.innerHTML = '<main class="access-denied-page"><div><strong>404</strong><p>페이지를 찾을 수 없습니다.</p></div></main>';
-                    document.documentElement.dataset.access = 'blocked';
-                });
-            }
-        })();
-    </script>
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
@@ -37,19 +24,6 @@
         }
 
         * { box-sizing: border-box; }
-
-        html[data-access="denied"] body { visibility: hidden; }
-
-        .access-denied-page {
-            display: grid;
-            place-items: center;
-            width: 100%;
-            min-height: calc(100vh - 80px);
-            text-align: center;
-            color: var(--ink-700);
-        }
-        .access-denied-page strong { display: block; font-size: 56px; color: var(--ink-900); }
-        .access-denied-page p { margin: 8px 0 0; font-size: 15px; }
 
         body {
             font-family: 'Pretendard', sans-serif;
@@ -706,7 +680,7 @@
 
             const baseUrl = window.location.origin + '/obs_widget_v6.html';
 
-            let finalUrl = `${baseUrl}?overlayAccess=a1d5c2a1b2b744d3bacb0bf8c32e1bd3&url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&color=${encodeURIComponent(pointColor)}`;
+            let finalUrl = `${baseUrl}?url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&color=${encodeURIComponent(pointColor)}`;
 
             if (contentTitle.trim()) {
                 finalUrl += `&title=${encodeURIComponent(contentTitle.trim())}`;

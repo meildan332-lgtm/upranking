@@ -5,17 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/favicon.png">
     <title>OBS 댓글 랭킹 위젯 v6</title>
-    <script>
-        const OVERLAY_ACCESS_GRANTED = new URLSearchParams(window.location.search).get('overlayAccess') === 'a1d5c2a1b2b744d3bacb0bf8c32e1bd3';
-        document.documentElement.dataset.overlayAccess = OVERLAY_ACCESS_GRANTED ? 'granted' : 'denied';
-
-        if (!OVERLAY_ACCESS_GRANTED) {
-            document.addEventListener('DOMContentLoaded', function () {
-                document.body.innerHTML = '<main class="access-denied-page"><div><strong>404</strong><p>페이지를 찾을 수 없습니다.</p></div></main>';
-                document.documentElement.dataset.overlayAccess = 'blocked';
-            });
-        }
-    </script>
     <style>
 
         html[data-overlay-access="denied"] body { visibility: hidden; }
@@ -579,11 +568,6 @@ function setupWidgetUI(urlParams) {
 
 // 2. 서버에서 실시간 댓글 데이터 가져오기
 async function fetchRealComments() {
-    if (!OVERLAY_ACCESS_GRANTED) {
-        console.warn("OBS 위젯: 올바른 접근 파라미터가 없어 표시와 갱신이 차단되었습니다.");
-        return;
-    }
-
     const urlParams = new URLSearchParams(window.location.search);
 
     if (!window.uiSetupDone) {
@@ -613,8 +597,7 @@ async function fetchRealComments() {
     try {
         const cleanUrl = targetUrl.split('#')[0];
         const highlightParam = targetCommentId ? `&highlight=${encodeURIComponent(targetCommentId)}` : '';
-        const overlayAccess = urlParams.get('overlayAccess') || '';
-        const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}${highlightParam}&overlayAccess=${encodeURIComponent(overlayAccess)}`;
+        const apiUrl = `/api/comment?url=${encodeURIComponent(cleanUrl)}${highlightParam}`;
 
         const response = await fetch(apiUrl);
         if (response.status === 401 || response.status === 403) {
@@ -979,11 +962,8 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// 올바른 접근 파라미터가 있을 때만 최초 조회 및 5초 갱신 시작
-if (OVERLAY_ACCESS_GRANTED) {
-    setInterval(fetchRealComments, 5000);
-    fetchRealComments();
-}
+setInterval(fetchRealComments, 5000);
+fetchRealComments();
 </script>
 </body>
 </html>
