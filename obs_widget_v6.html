@@ -224,11 +224,15 @@
             top: 50%;
             display: inline-flex;
             align-items: center;
-            margin-left: 7px;
+            margin-left: 4px;
             font-size: 12px;
             line-height: 1;
             white-space: nowrap;
             transform: translateY(-50%);
+        }
+        body:not(.design-ios) .up-delta-slot .delta-arrow {
+            margin-right: 1px;
+            font-size: 10px;
         }
         body:not(.design-ios) .thumb-icon {
             color: var(--accent-color, #FF3B30);
@@ -481,8 +485,8 @@ function rankDeltaMarkup(delta) {
 
 function upDeltaMarkup(delta) {
     if (!delta) return '';
-    if (delta > 0) return `<span class="delta-badge delta-up">▲${delta}</span>`;
-    return `<span class="delta-badge delta-down">▼${Math.abs(delta)}</span>`;
+    if (delta > 0) return `<span class="delta-badge delta-up"><span class="delta-arrow">▲</span>${delta}</span>`;
+    return `<span class="delta-badge delta-down"><span class="delta-arrow">▼</span>${Math.abs(delta)}</span>`;
 }
 
 // 포인트 색상 프리셋 (색상 키 -> hex / rgb 값)
@@ -494,7 +498,8 @@ const ACCENT_COLORS = {
     blue: { hex: '#0A84FF', rgb: '10, 132, 255' },
     purple: { hex: '#AF52DE', rgb: '175, 82, 222' },
     pink: { hex: '#FF8FB1', rgb: '255, 143, 177' },
-    black: { hex: '#48484A', rgb: '72, 72, 74' }
+    black: { hex: '#48484A', rgb: '72, 72, 74' },
+    none: { hex: '#FFFFFF', rgb: '255, 255, 255' }
 };
 
 function applyAccentColor(colorKey) {
