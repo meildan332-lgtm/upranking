@@ -196,7 +196,6 @@
             justify-content: center;
             flex: 1 1 auto;
             padding-left: 12px;
-            border-left: 1px solid color-mix(in srgb, var(--text-primary) 24%, transparent);
             order: 3;
         }
         body:not(.design-ios) .nickname {
@@ -209,8 +208,9 @@
         body:not(.design-ios) .up-col {
             margin-left: 12px;
             padding-left: 12px;
-            border-left: 1px solid color-mix(in srgb, var(--text-primary) 24%, transparent);
             font-size: 19px;
+            min-width: 74px;
+            justify-content: flex-end;
             flex-shrink: 0;
             order: 4;
         }
@@ -224,6 +224,15 @@
         }
         body:not(.design-ios) .pinned-comment {
             border: 1px solid var(--card-border);
+            min-height: 76px;
+        }
+        body:not(.design-ios) .pinned-comment .rank-number,
+        body:not(.design-ios) .pinned-comment .nickname,
+        body:not(.design-ios) .pinned-comment .up-col {
+            font-size: 23px;
+        }
+        body:not(.design-ios) .pinned-comment .up-col {
+            min-width: 88px;
         }
 
         /* 커트라인: 자체 높이를 가진 행으로 분리해서 위/아래 댓글에 절대 가려지지 않도록 함 */
