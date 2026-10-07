@@ -456,10 +456,10 @@
 
                 <div class="form-group">
                     <label>글꼴</label>
-                    <select id="fontSelect">
-                        <option value="pretendard" selected>프리텐다드 (기본)</option>
+                    <select id="fontSelect" autocomplete="off">
+                        <option value="pretendard">프리텐다드</option>
                         <option value="dahyeon">온글잎 박다현체</option>
-                        <option value="gmarket">G마켓 산스</option>
+                        <option value="gmarket" selected>G마켓 산스 (기본)</option>
                         <option value="cafe24">카페24 써라운드 에어</option>
                         <option value="paperlogy">페이퍼로지</option>
                     </select>
@@ -746,6 +746,9 @@
             previewPanel.style.display = 'block';
             frame.src = buildWidgetUrl();
         }
+
+        // 브라우저가 이전 폼 값을 복원하더라도 기본 글꼴은 G마켓 산스로 시작
+        document.getElementById('fontSelect').value = 'gmarket';
 
         // 입력값이 바뀔 때마다 미리보기를 갱신
         document.querySelectorAll('.container input, .container textarea, .container select').forEach(el => {
