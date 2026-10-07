@@ -213,7 +213,7 @@
             min-width: 100px;
             justify-content: flex-end;
             flex-shrink: 0;
-            transform: translateX(-36px);
+            transform: translateX(-30px);
             order: 4;
         }
         body:not(.design-ios) .up-delta-slot {
@@ -355,6 +355,7 @@
         }
         body.design-ios .pinned-comment {
             border-radius: 26px;
+            background: var(--pinned-bg);
             box-shadow: none;
         }
         body.design-ios .cutoff-text { border: 3px solid rgba(255,255,255,.8); border-radius: 999px; padding: 6px 18px; box-shadow: none; }
@@ -469,8 +470,8 @@ function rankDeltaMarkup(delta) {
 
 function upDeltaMarkup(delta) {
     if (!delta) return '';
-    if (delta > 0) return `<span class="delta-badge delta-up">+${delta}</span>`;
-    return `<span class="delta-badge delta-down">${delta}</span>`;
+    if (delta > 0) return `<span class="delta-badge delta-up">▲${delta}</span>`;
+    return `<span class="delta-badge delta-down">▼${Math.abs(delta)}</span>`;
 }
 
 // 포인트 색상 프리셋 (색상 키 -> hex / rgb 값)
