@@ -310,7 +310,7 @@
         }
 
         /* 너비(%)는 JS에서 댓글 카드 가로폭(=이 섹션의 폭) 기준으로 지정됨 */
-        .qr-image { position: relative; width: 75%; aspect-ratio: 1 / 1; background-color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; flex-shrink: 0; margin: 0 auto; }
+        .qr-image { position: relative; width: 100%; aspect-ratio: 1 / 1; background-color: white; padding: 10px; border-radius: 8px; box-sizing: border-box; flex-shrink: 0; margin: 0 auto; }
         .qr-image svg { width: 100%; height: 100%; display: block; }
         .qr-profile-image {
             display: none;
@@ -449,7 +449,7 @@
 // QR 50% 이하에서는 900x500 가로형, 그 외에는 500x1000 세로형 캔버스를 사용함
 (function () {
     const params = new URLSearchParams(window.location.search);
-    const qrSize = parseInt(params.get('qrsize') || '75', 10);
+    const qrSize = parseInt(params.get('qrsize') || '100', 10);
     const horizontalLayout = params.get('qr') === 'on' && qrSize <= 50;
     const DESIGN_WIDTH = horizontalLayout ? 900 : 500;
     const DESIGN_HEIGHT = horizontalLayout ? 500 : 1000;
@@ -616,7 +616,7 @@ function setupWidgetUI(urlParams) {
     const qrMode = urlParams.get('qr');
     const qrPosition = urlParams.get('qrpos') || 'top';
     const qrText = urlParams.get('qrtext');
-    const qrSize = urlParams.get('qrsize') || '75';
+    const qrSize = urlParams.get('qrsize') || '100';
     const qrFontSize = urlParams.get('qrFontSize') || '15';
     const qrFontColor = urlParams.get('qrFontColor') || '#3d4152';
     const qrLinkMode = urlParams.get('qrLinkMode') || 'auto';
@@ -670,7 +670,7 @@ function setupWidgetUI(urlParams) {
                 qrSection.style.setProperty('--qr-column-width', sizePercent + '%');
                 qrImg.style.width = '100%';
             } else {
-                qrImg.style.width = (Number.isFinite(sizePercent) ? sizePercent : 75) + '%';
+                qrImg.style.width = (Number.isFinite(sizePercent) ? sizePercent : 100) + '%';
             }
         }
 
