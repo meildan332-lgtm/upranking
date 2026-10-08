@@ -488,6 +488,14 @@
                 </div>
 
                 <div class="form-group">
+                    <label>배경</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="backgroundMode" value="on" checked> 켜기</label>
+                        <label><input type="radio" name="backgroundMode" value="off"> 끄기</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label>포인트 색상</label>
                     <div class="color-swatch-group" id="colorSwatchGroup">
                         <label class="color-swatch" style="--swatch-color:#FF3B30;">
@@ -668,6 +676,7 @@
             const font = document.getElementById('fontSelect').value;
             const designMode = document.querySelector('input[name="designMode"]:checked').value;
             const themeMode = document.querySelector('input[name="themeMode"]:checked').value;
+            const backgroundMode = document.querySelector('input[name="backgroundMode"]:checked').value;
             const selectedPointColor = document.querySelector('input[name="pointColor"]:checked').value;
             const pointColor = selectedPointColor === 'custom'
                 ? document.getElementById('customPointColor').value
@@ -691,7 +700,7 @@
 
             const baseUrl = window.location.origin + '/obs_widget_v6.html';
 
-            let finalUrl = `${baseUrl}?url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&color=${encodeURIComponent(pointColor)}`;
+            let finalUrl = `${baseUrl}?url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&background=${encodeURIComponent(backgroundMode)}&color=${encodeURIComponent(pointColor)}`;
 
             if (contentTitle.trim()) {
                 finalUrl += `&title=${encodeURIComponent(contentTitle.trim())}`;

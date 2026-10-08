@@ -398,6 +398,12 @@
             box-shadow: none;
         }
 
+        /* 배경 끄기: 카드는 유지하고 위젯 전체의 바깥 배경만 투명하게 처리 */
+        body.background-off #widget-container {
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
         /* 순위가 바뀐 순간에는 순위 숫자 자리에 등락을 잠시 표시 */
         .rank-number.rank-change {
             font-size: 16px !important;
@@ -605,6 +611,7 @@ function setupWidgetUI(urlParams) {
     const font = urlParams.get('font') || 'gmarket';
     const design = urlParams.get('design') || 'default';
     const theme = urlParams.get('theme') || 'light';
+    const background = urlParams.get('background') || 'on';
     const color = urlParams.get('color') || 'red';
     const qrMode = urlParams.get('qr');
     const qrPosition = urlParams.get('qrpos') || 'top';
@@ -620,6 +627,7 @@ function setupWidgetUI(urlParams) {
     applyFontPreset(font);
     applyDesignPreset(design);
     applyThemePreset(theme);
+    document.body.classList.toggle('background-off', background === 'off');
     applyAccentColor(color);
     document.body.classList.toggle('layout-horizontal', horizontalLayout);
     document.body.classList.toggle('qr-bottom', qrPosition === 'bottom');
