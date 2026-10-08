@@ -11,7 +11,16 @@
 <body>
   <main id="wrap" class="wrap offline"><section class="card"><div class="top"><div id="title" class="title">SOOP VOD 연결 대기 중</div><div id="time" class="time">00:00 / 00:00</div></div><div class="timeline"><div id="progress" class="progress"></div></div></section></main>
   <script>
-    const channel=new URLSearchParams(location.search).get('channel')||location.pathname.split('/').filter(Boolean).pop(),el=id=>document.getElementById(id);function fmt(v){const s=Math.max(0,Math.floor(Number(v)||0)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'):String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}async function update(){try{const r=await fetch('/api/vod-state/'+encodeURIComponent(channel),{cache:'no-store'}),s=await r.json();if(!r.ok)throw new Error(s.error||'offline');el('title').textContent=s.title||'제목 없음';el('time').textContent=fmt(s.currentTime)+' / '+fmt(s.duration);el('progress').style.width=(s.duration>0?Math.min(100,s.currentTime/s.duration*100):0)+'%';el('wrap').classList.toggle('offline',!s.connected)}catch{el('wrap').classList.add('offline')}}update();setInterval(update,1000);
+    const channel=new URLSearchParams(location.search).get('channel')||location.pathname.split('/').filter(Boolean).pop(),el=id=>document.getElementById(id);
+    const PLAYBACK_LEAD_SECONDS=1;
+    function displayTime(state){
+      const duration=Math.max(0,Number(state.duration)||0);
+      const current=Math.max(0,Number(state.currentTime)||0);
+      const lead=state.connected&&!state.paused?PLAYBACK_LEAD_SECONDS:0;
+      return duration>0?Math.min(duration,current+lead):0;
+    }
+    function fmt(v){const s=Math.max(0,Math.floor(Number(v)||0)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'):String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}
+    async function update(){try{const r=await fetch('/api/vod-state/'+encodeURIComponent(channel),{cache:'no-store'}),s=await r.json();if(!r.ok)throw new Error(s.error||'offline');const current=displayTime(s);el('title').textContent=s.title||'제목 없음';el('time').textContent=fmt(current)+' / '+fmt(s.duration);el('progress').style.width=(s.duration>0?Math.min(100,current/s.duration*100):0)+'%';el('wrap').classList.toggle('offline',!s.connected)}catch{el('wrap').classList.add('offline')}}update();setInterval(update,1000);
   </script>
 </body>
 </html>
