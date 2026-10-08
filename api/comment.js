@@ -32,34 +32,67 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "게시글 주소 형식이 올바르지 않습니다. (채널명 또는 게시물 번호를 찾을 수 없음)" });
     }
 
-    // 🎯 3. 찾아내신 SOOP Request URL 완벽 조립
-    // page=1 : 첫 페이지 댓글
+    // 3. 첫 페이지에서 전체 페이지 수를 확인한 뒤 나머지 페이지를 모두 가져온다.
     // orderBy=like_cnt : 추천수(인기)순 정렬
-    // pHighlightNo : 하이라이트할 댓글 번호 (있으면 몇 페이지에 있든 응답에 포함되어 옴)
+    // pHighlightNo : 하이라이트할 댓글 번호
     const highlightParam = highlight ? `&pHighlightNo=${encodeURIComponent(highlight)}` : '';
-    const targetApiUrl = `https://api-channel.sooplive.com/v1.1/channel/${channelId}/post/${postId}/comment?page=1&orderBy=like_cnt&cCommentNo=0${highlightParam}`;
-
-    // 4. SOOP 서버에 API 요청 (방어막 우회)
-    const response = await fetch(targetApiUrl, {
-      method: 'GET',
-      headers: {
+    const apiBase = `https://api-channel.sooplive.com/v1.1/channel/${channelId}/post/${postId}/comment`;
+    const headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Referer': cleanUrl,
         'Accept': 'application/json, text/plain, */*'
-      }
-    });
+    };
 
-    if (!response.ok) {
-      const responseText = await response.text();
-      console.error(`SOOP API 요청 실패 (${response.status}):`, responseText.slice(0, 500));
-      return res.status(response.status).json({ error: `SOOP API 요청 실패 (${response.status})` });
+    const fetchPage = async (page) => {
+      const targetApiUrl = `${apiBase}?page=${page}&orderBy=like_cnt&cCommentNo=0${highlightParam}`;
+      const response = await fetch(targetApiUrl, { method: 'GET', headers });
+
+      if (!response.ok) {
+        const responseText = await response.text();
+        console.error(`SOOP API 요청 실패 (${response.status}, page ${page}):`, responseText.slice(0, 500));
+        throw new Error(`SOOP API 요청 실패 (${response.status})`);
+      }
+
+      return response.json();
+    };
+
+    const firstPage = await fetchPage(1);
+    const lastPage = Math.max(1, Number(firstPage?.meta?.lastPage) || 1);
+    const pages = [firstPage];
+
+    // SOOP에 한꺼번에 너무 많은 요청을 보내지 않도록 5페이지씩 처리한다.
+    for (let start = 2; start <= lastPage; start += 5) {
+      const pageNumbers = Array.from(
+        { length: Math.min(5, lastPage - start + 1) },
+        (_, index) => start + index
+      );
+      pages.push(...await Promise.all(pageNumbers.map(fetchPage)));
     }
 
-    // SOOP 서버가 준 순수 JSON 데이터
-    const data = await response.json();
+    // 베스트/하이라이트 댓글이 여러 페이지에 중복될 수 있어 댓글 번호로 제거한다.
+    const commentsById = new Map();
+    for (const pageData of pages) {
+      for (const comment of (Array.isArray(pageData?.data) ? pageData.data : [])) {
+        const key = comment.pCommentNo ?? comment.comment_no ?? comment.id;
+        if (key == null || !commentsById.has(String(key))) {
+          commentsById.set(key == null ? Symbol() : String(key), comment);
+        }
+      }
+    }
+
+    const data = {
+      ...firstPage,
+      data: Array.from(commentsById.values()),
+      meta: {
+        ...(firstPage.meta || {}),
+        itemCount: commentsById.size,
+        currentPage: 1,
+        fetchedPages: lastPage
+      }
+    };
 
     // 5. 위젯으로 데이터 전달 및 캐싱 설정 (5초 단위 갱신으로 IP 차단 방지)
-    res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate');
+    res.setHeader('Cache-Control', 's-maxage=5, stale-while-revalidate=25');
     res.status(200).json(data);
 
   } catch (error) {
