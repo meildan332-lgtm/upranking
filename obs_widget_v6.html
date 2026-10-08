@@ -397,6 +397,14 @@
             background-color: var(--pinned-bg);
             box-shadow: none;
         }
+
+        /* 순위가 바뀐 순간에는 순위 숫자 자리에 등락을 잠시 표시 */
+        .rank-number.rank-change {
+            font-size: 16px !important;
+            white-space: nowrap;
+        }
+        .rank-number.rank-change-up { color: #4CAF50 !important; }
+        .rank-number.rank-change-down { color: #FF5252 !important; }
     </style>
 </head>
 <body>
@@ -482,6 +490,33 @@ function rankDeltaMarkup(delta) {
     if (!delta) return '';
     if (delta > 0) return `<span class="delta-badge delta-up">▲${delta}</span>`; // 순위 숫자가 작아짐 = 순위 상승
     return `<span class="delta-badge delta-down">▼${Math.abs(delta)}</span>`;
+}
+
+function showRankChange(el, rankText, rankDelta) {
+    const rankEl = el.querySelector('.rank-number');
+    if (!rankEl) return;
+
+    if (el._rankChangeTimer) {
+        clearTimeout(el._rankChangeTimer);
+        el._rankChangeTimer = null;
+    }
+
+    rankEl.classList.remove('rank-change', 'rank-change-up', 'rank-change-down');
+
+    if (!rankDelta) {
+        rankEl.textContent = rankText;
+        return;
+    }
+
+    const isUp = rankDelta > 0;
+    rankEl.textContent = `${isUp ? '▲' : '▼'}${Math.abs(rankDelta)}`;
+    rankEl.classList.add('rank-change', isUp ? 'rank-change-up' : 'rank-change-down');
+
+    el._rankChangeTimer = setTimeout(() => {
+        rankEl.textContent = rankText;
+        rankEl.classList.remove('rank-change', 'rank-change-up', 'rank-change-down');
+        el._rankChangeTimer = null;
+    }, 1800);
 }
 
 function upDeltaMarkup(delta) {
@@ -987,7 +1022,7 @@ function createCommentElement(comment, rankText, extraClass, isPinned, rankDelta
     box.innerHTML = `
         <div class="rank-col">
             <div><span class="rank-number">${rankText}</span><span class="rank-danger" style="display:${danger ? 'block' : 'none'};">위기</span></div>
-            <span class="rank-delta-slot">${rankDeltaMarkup(rankDelta)}</span>
+            <span class="rank-delta-slot"></span>
         </div>
         ${profileImg ? `<img class="profile-pic" src="${profileImg}" alt="">` : `<div class="profile-pic"></div>`}
         <div class="info-col">
@@ -1011,14 +1046,13 @@ function updateCommentElement(el, comment, rankText, extraClass, isPinned, rankD
     const profileImg = comment.profileImage || comment.profile_image || "";
     const upCount = comment.likeCnt ?? comment.up_cnt ?? comment.good_cnt ?? 0;
 
-    const rankEl = el.querySelector('.rank-number');
-    if (rankEl && rankEl.textContent !== String(rankText)) rankEl.textContent = rankText;
+    showRankChange(el, rankText, rankDelta);
 
     const dangerEl = el.querySelector('.rank-danger');
     if (dangerEl) dangerEl.style.display = danger ? 'block' : 'none';
 
     const rankDeltaEl = el.querySelector('.rank-delta-slot');
-    if (rankDeltaEl) rankDeltaEl.innerHTML = rankDeltaMarkup(rankDelta);
+    if (rankDeltaEl) rankDeltaEl.innerHTML = '';
 
     const nickEl = el.querySelector('.nickname');
     if (nickEl && nickEl.textContent !== nickname) nickEl.textContent = nickname;
