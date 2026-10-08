@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINKCARD STUDIO — 게시글용 링크트리 생성기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Paperozi';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'DoolgiMayoGothic';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.1/Dovemayo_gothic.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Cafe24Surround';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24Ssurround.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+  }
+  :root{
+    --bg:#f2f2f6;
+    --panel:#ffffff;
+    --panel-2:#f6f6f9;
+    --panel-3:#ececf1;
+    --border:#e2e2e8;
+    --text:#1c1c1e;
+    --text-dim:#6e6e73;
+    --text-faint:#a0a0a6;
+    --accent:#0a84ff;
+    --accent-dim:#0a6fd6;
+    --accent-2:#ff453a;
+    --accent-soft:rgba(10,132,255,.10);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(10,132,255,.06), transparent 60%),
+      radial-gradient(900px 500px at 110% 10%, rgba(255,69,58,.04), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3,.display{font-family:'Space Grotesk',sans-serif;}
+  ::selection{background:var(--accent);color:#ffffff;}
+
+  /* ---------- Header ---------- */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 28px;border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent-2);box-shadow:0 0 0 3px rgba(255,69,58,.16), 0 0 12px rgba(255,69,58,.5);animation:pulse 2.2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .brand .name{font-weight:700;font-size:16px;letter-spacing:.02em;}
+  .brand .sub{color:var(--text-faint);font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-left:6px;}
+  .make-btn{
+    background:linear-gradient(135deg,var(--accent),#20b39c);
+    color:#ffffff;border:none;font-weight:700;font-size:14px;
+    padding:11px 20px;border-radius:10px;cursor:pointer;
+    box-shadow:0 8px 24px -8px rgba(10,132,255,.5);
+    transition:transform .15s ease, box-shadow .15s ease;
+    font-family:'Inter',sans-serif;
+  }
+  .make-btn:hover{transform:translateY(-1px);box-shadow:0 10px 28px -6px rgba(10,132,255,.6);}
+  .make-btn:active{transform:translateY(0);}
+
+  /* ---------- Layout ---------- */
+  .layout{display:grid;grid-template-columns:minmax(340px,440px) 1fr;gap:0;min-height:calc(100vh - 65px);}
+  @media (max-width: 880px){.layout{grid-template-columns:1fr;}}
+
+  .settings{
+    padding:24px;border-right:1px solid var(--border);
+    max-height:calc(100vh - 65px);overflow-y:auto;
+  }
+  .settings::-webkit-scrollbar{width:8px;}
+  .settings::-webkit-scrollbar-thumb{background:var(--panel-3);border-radius:8px;}
+
+  .preview-col{
+    padding:40px 28px;display:flex;flex-direction:column;align-items:center;
+    justify-content:flex-start;gap:18px;
+  }
+  .preview-label{color:var(--text-faint);font-size:11px;letter-spacing:.12em;text-transform:uppercase;align-self:flex-start;margin-left:4px;}
+  .preview-frame{
+    width:100%;max-width:380px;
+    border:1px dashed var(--border);border-radius:20px;padding:26px 18px;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0px, rgba(0,0,0,.012) 1px, transparent 1px, transparent 3px);
+    position:sticky;top:90px;
+  }
+
+  /* ---------- Section blocks ---------- */
+  .block{margin-bottom:14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--panel);overflow:hidden;}
+  .block > summary, .block-head{
+    list-style:none;cursor:pointer;padding:14px 16px;font-weight:600;font-size:13.5px;
+    display:flex;align-items:center;justify-content:space-between;user-select:none;color:var(--text);
+  }
+  .block > summary::-webkit-details-marker{display:none;}
+  .block > summary .chev{color:var(--text-faint);transition:transform .18s;font-size:12px;}
+  .block[open] > summary .chev{transform:rotate(90deg);}
+  .block .body{padding:4px 16px 16px;}
+  .block-tag{font-size:10px;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:20px;letter-spacing:.04em;margin-left:8px;}
+
+  .subhead{font-size:11.5px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.08em;margin:14px 0 8px;font-weight:600;}
+  .subhead:first-child{margin-top:2px;}
+
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;font-weight:500;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+  input[type=text], input[type=url], select, textarea{
+    width:100%;background:var(--panel-2);border:1px solid var(--border);color:var(--text);
+    padding:9px 11px;border-radius:8px;font-size:13px;font-family:'Inter',sans-serif;outline:none;
+  }
+  input[type=text]:focus, input[type=url]:focus, select:focus, textarea:focus{border-color:var(--accent-dim);}
+  input[type=color]{
+    -webkit-appearance:none;appearance:none;width:38px;height:34px;border:1px solid var(--border);
+    border-radius:8px;background:var(--panel-2);padding:2px;cursor:pointer;
+  }
+  input[type=color]::-webkit-color-swatch{border-radius:5px;border:none;}
+  .color-row{display:flex;align-items:center;gap:8px;}
+  .color-row .hex{flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;}
+
+  input[type=range]{
+    -webkit-appearance:none;width:100%;height:4px;border-radius:4px;background:var(--panel-3);outline:none;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);
+    border:2px solid #ffffff;box-shadow:0 0 0 1px rgba(0,0,0,.15);cursor:pointer;margin-top:-1px;
+  }
+  .range-val{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--accent);min-width:44px;text-align:right;}
+  .range-row{display:flex;align-items:center;gap:10px;}
+
+  select{appearance:none;background-image:linear-gradient(45deg,transparent 50%, var(--text-faint) 50%),linear-gradient(135deg, var(--text-faint) 50%, transparent 50%);background-position:calc(100% - 16px) center, calc(100% - 11px) center;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:30px;}
+
+  .btn-ghost{
+    background:transparent;border:1px solid var(--border);color:var(--text-dim);
+    padding:8px 12px;border-radius:8px;font-size:12.5px;cursor:pointer;font-weight:500;
+    transition:border-color .15s, color .15s;
+  }
+  .btn-ghost:hover{border-color:var(--accent-dim);color:var(--accent);}
+  .btn-ghost.danger:hover{border-color:#a33;color:#ff7a6e;}
+  .btn-full{width:100%;}
+
+  .radio-pills{display:flex;gap:6px;flex-wrap:wrap;}
+  .radio-pills input{display:none;}
+  .radio-pills label{
+    padding:7px 12px;border-radius:20px;border:1px solid var(--border);font-size:12px;color:var(--text-dim);cursor:pointer;
+  }
+  .radio-pills input:checked + label{background:var(--accent-soft);border-color:var(--accent-dim);color:var(--accent);}
+
+  /* Profile section */
+  .avatar-preview{
+    width:56px;height:56px;border-radius:50%;object-fit:cover;background:var(--panel-3);
+    border:1px solid var(--border);flex-shrink:0;
+  }
+  .avatar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .hint{font-size:11px;color:var(--text-faint);margin-top:5px;line-height:1.5;}
+
+  /* Button list */
+  .btn-item{
+    border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--panel-2);
+  }
+  .btn-item-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .btn-item-head .idx{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);}
+  .icon-grid{display:flex;flex-wrap:wrap;gap:6px;}
+  .icon-opt{
+    width:58px;display:flex;flex-direction:column;align-items:center;gap:4px;
+    padding:7px 4px 6px;border:1px solid var(--border);border-radius:9px;cursor:pointer;
+    background:var(--panel-3);color:var(--text-dim);transition:border-color .12s, background .12s, color .12s;
+  }
+  .icon-opt:hover{border-color:var(--accent-dim);color:var(--accent);}
+  .icon-opt.selected{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);}
+  .icon-opt .glyph{height:20px;display:flex;align-items:center;justify-content:center;}
+  .icon-opt .glyph svg{width:19px;height:19px;}
+  .icon-opt .glyph .none-dash{width:14px;height:2px;background:currentColor;border-radius:2px;opacity:.5;}
+  .icon-opt .lbl{font-size:9.5px;line-height:1.1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:54px;}
+  .add-btn-row{margin-top:2px;}
+  .remove-x{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px;}
+  .remove-x:hover{color:#ff7a6e;}
+  .move-btns{display:flex;gap:2px;}
+  .move-btns button{background:none;border:none;color:var(--text-faint);cursor:pointer;font-size:13px;padding:2px 5px;}
+  .move-btns button:hover{color:var(--accent);}
+  .empty-hint{font-size:12.5px;color:var(--text-faint);padding:14px 4px;text-align:center;border:1px dashed var(--border);border-radius:10px;}
+
+  /* Preview card render target */
+  #cardTarget{display:flex;flex-direction:column;align-items:center;text-align:center;}
+
+  .footer-actions{display:flex;gap:8px;margin-top:16px;width:100%;max-width:380px;}
+  .footer-actions .btn-ghost{flex:1;}
+
+  /* Modal */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(4,5,8,.7);backdrop-filter:blur(4px);
+    display:none;align-items:center;justify-content:center;z-index:100;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal{
+    background:var(--panel);border:1px solid var(--border);border-radius:16px;
+    width:100%;max-width:640px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;
+    box-shadow:0 30px 80px -20px rgba(0,0,0,.7);
+  }
+  .modal-head{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .modal-head h3{margin:0;font-size:15px;}
+  .modal-close{background:none;border:none;color:var(--text-faint);font-size:20px;cursor:pointer;}
+  .modal-body{padding:18px 20px;overflow-y:auto;}
+  #outputCode{
+    width:100%;min-height:220px;background:#080a0e;border:1px solid var(--border);border-radius:10px;
+    color:#9fd3ff;font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:14px;resize:vertical;line-height:1.55;
+  }
+  .modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;align-items:center;}
+  .copy-status{font-size:12px;color:var(--accent);margin-right:auto;opacity:0;transition:opacity .2s;}
+  .copy-status.show{opacity:1;}
+
+  @media (max-width:880px){
+    .preview-frame{position:static;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span class="dot"></span>
+    <span class="name">LINKCARD STUDIO</span>
+    <span class="sub">for SOOP creators</span>
+  </div>
+  <button class="make-btn" id="makeBtn">만들기 →</button>
+</header>
+
+<div class="layout">
+  <!-- ============ SETTINGS ============ -->
+  <div class="settings">
+
+    <!-- 프로필 -->
+    <details class="block" open>
+      <summary>프로필 <span class="chev">▸</span></summary>
+      <div class="body">
+        <div class="field">
+          <label>닉네임</label>
+          <input type="text" id="nickname" placeholder="예) 홍길동" maxlength="30">
+        </div>
+        <div class="field">
+          <label>SOOP 아이디 (BJ ID)</label>
+          <input type="text" id="soopId" placeholder="예) afreecatv_id">
+          <div class="hint">아이디를 입력하면 SOOP 프로필 사진을 자동으로 불러와요. 안 불러와지면 아래에서 직접 설정하세요.</div>
+        </div>
+
+        <div class="subhead">프로필 이미지</div>
+        <div class="avatar-row">
+          <img id="avatarPreview" class="avatar-preview" src="" alt="미리보기">
+          <div style="flex:1;">
+            <div class="radio-pills" id="imgModePills">
+              <input type="radio" name="imgMode" id="imgModeAuto" value="auto" checked><label for="imgModeAuto">자동</label>
+              <input type="radio" name="imgMode" id="imgModeUrl" value="url"><label for="imgModeUrl">URL</label>
+            </div>
+          </div>
+        </div>
+        <div class="field" id="imgUrlField" style="display:none;">
+          <input type="url" id="imgUrlInput" placeholder="https://...">
+        </div>
+      </div>
+    </details>
+
+    <!-- 버튼 목록 -->
+    <details class="block" open>
+      <summary>버튼 목록 <span class="chev">▸</span></summary>
+      <div class="body">
+        <div id="buttonList"></div>
+        <div id="emptyHint" class="empty-hint">아직 버튼이 없어요. 아래에서 추가해보세요.</div>
+        <div class="add-btn-row">
+          <button class="btn-ghost btn-full" id="addButtonBtn">+ 버튼 추가</button>
+        </div>
+      </div>
+    </details>
+
+    <!-- 고급설정 -->
+    <details class="block">
+      <summary>고급설정 <span class="chev">▸</span></summary>
+      <div class="body">
+
+        <div class="subhead">프로필 사진</div>
+        <div class="field">
+          <label>크기</label>
+          <div class="range-row"><input type="range" id="avatarSize" min="40" max="140" value="72"><span class="range-val" id="avatarSizeVal">72px</span></div>
+        </div>
+        <div class="field">
+          <label>프레임 모양</label>
+          <div class="radio-pills" id="avatarShapePills">
+            <input type="radio" name="avatarShape" id="avatarShapeCircle" value="circle" checked><label for="avatarShapeCircle">원형</label>
+            <input type="radio" name="avatarShape" id="avatarShapeSquare" value="square"><label for="avatarShapeSquare">네모</label>
+          </div>
+        </div>
+
+        <div class="subhead">카드 배경</div>
+        <div class="field">
+          <label>배경색</label>
+          <div class="color-row">
+            <input type="color" id="cardBg" value="#ffffff">
+            <input type="text" class="hex" id="cardBgHex" value="#ffffff">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>외곽선 두께</label>
+            <div class="range-row"><input type="range" id="cardBorderW" min="0" max="10" value="1"><span class="range-val" id="cardBorderWVal">1px</span></div>
+          </div>
+          <div class="field">
+            <label>선 종류</label>
+            <select id="cardBorderStyle">
+              <option value="solid">실선</option>
+              <option value="dashed">파선</option>
+              <option value="dotted">점선</option>
+              <option value="double">이중선</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>외곽선 색상</label>
+          <div class="color-row">
+            <input type="color" id="cardBorderColor" value="#e5e5ea">
+            <input type="text" class="hex" id="cardBorderColorHex" value="#e5e5ea">
+          </div>
+        </div>
+        <div class="subhead">카드 그림자</div>
+        <div class="field">
+          <label>그림자 색상 / 불투명도</label>
+          <div class="color-row">
+            <input type="color" id="cardShadowColor" value="#000000">
+            <input type="range" id="cardShadowOpacity" min="0" max="100" value="8" style="flex:1;">
+            <span class="range-val" id="cardShadowOpacityVal">8%</span>
+          </div>
+        </div>
+        <div class="row3">
+          <div class="field"><label>각도</label><div class="range-row"><input type="range" id="cardShadowAngle" min="0" max="360" value="180"><span class="range-val" id="cardShadowAngleVal">180°</span></div></div>
+          <div class="field"><label>거리</label><div class="range-row"><input type="range" id="cardShadowDist" min="0" max="60" value="8"><span class="range-val" id="cardShadowDistVal">8px</span></div></div>
+          <div class="field"><label>두께(번짐)</label><div class="range-row"><input type="range" id="cardShadowBlur" min="0" max="80" value="28"><span class="range-val" id="cardShadowBlurVal">28px</span></div></div>
+        </div>
+
+        <div class="subhead" style="margin-top:22px;">버튼 배경</div>
+        <div class="field">
+          <label>배경색</label>
+          <div class="color-row">
+            <input type="color" id="btnBg" value="#f2f2f7">
+            <input type="text" class="hex" id="btnBgHex" value="#f2f2f7">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>외곽선 두께</label>
+            <div class="range-row"><input type="range" id="btnBorderW" min="0" max="10" value="0"><span class="range-val" id="btnBorderWVal">0px</span></div>
+          </div>
+          <div class="field">
+            <label>선 종류</label>
+            <select id="btnBorderStyle">
+              <option value="solid">실선</option>
+              <option value="dashed">파선</option>
+              <option value="dotted">점선</option>
+              <option value="double">이중선</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label>외곽선 색상</label>
+          <div class="color-row">
+            <input type="color" id="btnBorderColor" value="#e5e5ea">
+            <input type="text" class="hex" id="btnBorderColorHex" value="#e5e5ea">
+          </div>
+        </div>
+        <div class="subhead">버튼 그림자</div>
+        <div class="field">
+          <label>그림자 색상 / 불투명도</label>
+          <div class="color-row">
+            <input type="color" id="btnShadowColor" value="#000000">
+            <input type="range" id="btnShadowOpacity" min="0" max="100" value="5" style="flex:1;">
+            <span class="range-val" id="btnShadowOpacityVal">5%</span>
+          </div>
+        </div>
+        <div class="row3">
+          <div class="field"><label>각도</label><div class="range-row"><input type="range" id="btnShadowAngle" min="0" max="360" value="180"><span class="range-val" id="btnShadowAngleVal">180°</span></div></div>
+          <div class="field"><label>거리</label><div class="range-row"><input type="range" id="btnShadowDist" min="0" max="60" value="2"><span class="range-val" id="btnShadowDistVal">2px</span></div></div>
+          <div class="field"><label>두께(번짐)</label><div class="range-row"><input type="range" id="btnShadowBlur" min="0" max="80" value="6"><span class="range-val" id="btnShadowBlurVal">6px</span></div></div>
+        </div>
+
+        <div class="subhead" style="margin-top:22px;">폰트</div>
+        <div class="field">
+          <label>폰트</label>
+          <select id="fontFamily">
+            <option value="-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif">아이폰 기본 (SF Pro)</option>
+            <option value="'Pretendard','Malgun Gothic',sans-serif">Pretendard</option>
+            <option value="'Paperozi',sans-serif">페이퍼로지</option>
+            <option value="'DoolgiMayoGothic',sans-serif">둘기마요고딕</option>
+            <option value="'Cafe24Surround',sans-serif">카페24서라운드</option>
+          </select>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>폰트 크기</label>
+            <div class="range-row"><input type="range" id="fontSize" min="11" max="26" value="16"><span class="range-val" id="fontSizeVal">16px</span></div>
+          </div>
+          <div class="field">
+            <label>폰트 색상</label>
+            <div class="color-row">
+              <input type="color" id="fontColor" value="#1c1c1e">
+              <input type="text" class="hex" id="fontColorHex" value="#1c1c1e">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </details>
+
+    <button class="btn-ghost btn-full" id="saveBtn" style="margin-top:6px;">💾 설정 저장</button>
+  </div>
+
+  <!-- ============ PREVIEW ============ -->
+  <div class="preview-col">
+    <div class="preview-label">미리보기</div>
+    <div class="preview-frame">
+      <div id="cardTarget"></div>
+    </div>
+    <div class="footer-actions">
+      <button class="btn-ghost" id="resetBtn">초기화</button>
+      <button class="btn-ghost" id="makeBtn2">만들기 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ OUTPUT MODAL ============ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>게시글용 HTML</h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="hint" style="margin-bottom:10px;">아래 코드를 복사해서 게시글 작성창(HTML 삽입)에 붙여넣으세요.</div>
+      <textarea id="outputCode" readonly></textarea>
+    </div>
+    <div class="modal-foot">
+      <span class="copy-status" id="copyStatus">복사되었습니다 ✓</span>
+      <button class="btn-ghost" id="modalCloseBtn2">닫기</button>
+      <button class="make-btn" id="copyBtn">복사하기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- Icon library (generic, brand-neutral) ---------------- */
+  const ICONS = {
+    none:  null,
+    play:  '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.6"/><polygon points="10,8.3 16.2,12 10,15.7" fill="currentColor"/>',
+    camera:'<rect x="3" y="7.5" width="18" height="12" rx="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8.3 7.5l1.2-2h5l1.2 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13.3" r="3.1" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+    chat:  '<rect x="3" y="5" width="18" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/><polygon points="7.5,16 7.5,19.5 11.5,16" fill="currentColor"/>',
+    game:  '<rect x="2.5" y="8" width="19" height="9" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7 10.7v4.6M4.7 13h4.6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="16" cy="11.6" r="1" fill="currentColor"/><circle cx="18.2" cy="13.8" r="1" fill="currentColor"/>',
+    home:  '<path d="M4 11L12 4l8 7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/><path d="M6 10v9h12v-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><rect x="10" y="13" width="4" height="6" fill="currentColor"/>',
+    mail:  '<rect x="3" y="5.5" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3.5 6.5L12 13l8.5-6.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
+    star:  '<polygon points="12,2.5 14.7,9 21.5,9.6 16.3,14 18,20.7 12,17 6,20.7 7.7,14 2.5,9.6 9.3,9" fill="currentColor"/>',
+    heart: '<path d="M12 20.3S3.8 15.2 3.8 9.6C3.8 6.6 6 4.5 8.6 4.5c1.9 0 3.3 1 4 2.4C13.4 5.5 14.7 4.5 16.6 4.5c2.6 0 4.8 2.1 4.8 5.1 0 5.6-9.4 10.7-9.4 10.7z" fill="currentColor"/>',
+    link:  '<rect x="2.6" y="9.4" width="10" height="5.6" rx="2.8" transform="rotate(-45 7.6 12.2)" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="11.4" y="9.4" width="10" height="5.6" rx="2.8" transform="rotate(-45 16.4 12.2)" fill="none" stroke="currentColor" stroke-width="1.7"/>',
+    music: '<circle cx="7" cy="18" r="2.6" fill="currentColor"/><circle cx="17" cy="16" r="2.6" fill="currentColor"/><path d="M9.6 18V5.5L19.6 4v10.6" fill="none" stroke="currentColor" stroke-width="1.6"/>',
+    tv:    '<rect x="3" y="7" width="18" height="12.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 7l3.2-3.5M16 7l-3.2-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>',
+    gift:  '<rect x="4" y="10.5" width="16" height="9.5" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3" y="7" width="18" height="4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v13" stroke="currentColor" stroke-width="1.6"/><path d="M12 7c-1.6-3.2-6-3-6 .3S9.5 8.4 12 7zM12 7c1.6-3.2 6-3 6 .3S14.5 8.4 12 7z" fill="none" stroke="currentColor" stroke-width="1.5"/>',
+    calendar:'<rect x="3" y="5.5" width="18" height="15" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 9.8h18" stroke="currentColor" stroke-width="1.6"/><path d="M8 3.6v3.2M16 3.6v3.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="13.6" r="1.15" fill="currentColor"/><circle cx="12" cy="13.6" r="1.15" fill="currentColor"/><circle cx="16" cy="13.6" r="1.15" fill="currentColor"/><circle cx="8" cy="17.1" r="1.15" fill="currentColor"/><circle cx="12" cy="17.1" r="1.15" fill="currentColor"/>',
+    youtube:'<rect x="2.5" y="5.5" width="19" height="13" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/><polygon points="10,9.3 10,14.7 15,12" fill="currentColor"/>',
+    cafe:  '<path d="M5 9h12v6.2a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4V9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M17 10.2h1.4a2.6 2.6 0 0 1 0 5.2H17" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 6.2c0-1 1.4-1 1.4-2M12 6.2c0-1 1.4-1 1.4-2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>',
+    instagram:'<rect x="3" y="3" width="18" height="18" rx="5.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.1" cy="6.9" r="1.15" fill="currentColor"/>',
+    fanheart:'<path d="M12 20.3S3.8 15.2 3.8 9.6C3.8 6.6 6 4.5 8.6 4.5c1.9 0 3.3 1 4 2.4C13.4 5.5 14.7 4.5 16.6 4.5c2.6 0 4.8 2.1 4.8 5.1 0 5.6-9.4 10.7-9.4 10.7z" fill="currentColor" opacity=".9"/><path d="M18.3 3.4l.6 1.4 1.4.6-1.4.6-.6 1.4-.6-1.4-1.4-.6 1.4-.6z" fill="currentColor"/>'
+  };
+  const ICON_LABELS = {none:'없음',calendar:'일정',youtube:'유튜브',cafe:'팬카페',instagram:'인스타그램',fanheart:'팬심',play:'재생/영상',camera:'사진',chat:'채팅/DM',game:'게임',home:'홈',mail:'메일',star:'즐겨찾기',heart:'하트',link:'링크',music:'음악',tv:'방송',gift:'후원/선물'};
+
+  function svg(iconKey, size){
+    if(!iconKey || iconKey==='none' || !ICONS[iconKey]) return '';
+    return '<svg viewBox="0 0 24 24" width="'+size+'" height="'+size+'" xmlns="http://www.w3.org/2000/svg">'+ICONS[iconKey]+'</svg>';
+  }
+
+  // Used only for the copy-paste output: 게시글 HTML editors commonly strip raw <svg> tags,
+  // so bake the icon into a background-image data URI (just a style attribute value) instead.
+  function iconBgSpan(iconKey, size, color){
+    if(!iconKey || iconKey==='none' || !ICONS[iconKey]) return '';
+    const body = ICONS[iconKey].replace(/currentColor/g, color);
+    const markup = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">'+body+'</svg>';
+    const uri = 'data:image/svg+xml,'+encodeURIComponent(markup).replace(/'/g,'%27').replace(/\(/g,'%28').replace(/\)/g,'%29');
+    return `<span style="display:inline-block;width:${size}px;height:${size}px;background-image:url('${uri}');background-size:contain;background-repeat:no-repeat;background-position:center;flex-shrink:0;"></span>`;
+  }
+
+  /* ---------------- State ---------------- */
+  let state = {
+    nickname: '',
+    soopId: '',
+    imgMode: 'auto',
+    imgUrl: '',
+    buttons: [
+      {id: uid(), label:'방송국 바로가기', url:'', icon:'tv', customIcon:''},
+      {id: uid(), label:'후원하기', url:'', icon:'gift', customIcon:''}
+    ],
+    adv: {
+      avatar: {size:72, shape:'circle'},
+      card: {bg:'#ffffff', borderW:1, borderStyle:'solid', borderColor:'#e5e5ea',
+             shadowColor:'#000000', shadowOpacity:8, shadowAngle:180, shadowDist:8, shadowBlur:28},
+      btn:  {bg:'#f2f2f7', borderW:0, borderStyle:'solid', borderColor:'#e5e5ea',
+             shadowColor:'#000000', shadowOpacity:5, shadowAngle:180, shadowDist:2, shadowBlur:6},
+      font: {family:"-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',sans-serif", size:16, color:'#1c1c1e'}
+    }
+  };
+
+  function uid(){ return 'b'+Math.random().toString(36).slice(2,9); }
+
+  /* ---------------- DOM refs ---------------- */
+  const $ = id => document.getElementById(id);
+  const nicknameInput = $('nickname');
+  const soopIdInput = $('soopId');
+  const avatarPreview = $('avatarPreview');
+  const imgUrlField = $('imgUrlField');
+  const imgUrlInput = $('imgUrlInput');
+  const buttonListEl = $('buttonList');
+  const emptyHint = $('emptyHint');
+  const cardTarget = $('cardTarget');
+
+  /* ---------------- Profile image resolution ---------------- */
+  function resolveProfileImg(){
+    if(state.imgMode === 'url' && state.imgUrl) return state.imgUrl;
+    if(state.imgMode === 'auto' && state.soopId){
+      const id = state.soopId.trim();
+      return 'https://stimg.sooplive.com/LOGO/'+id.slice(0,2)+'/'+id+'/'+id+'.jpg';
+    }
+    return '';
+  }
+  const FALLBACK_AVATAR = 'data:image/svg+xml;utf8,'+encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23eef0f3"/><circle cx="50" cy="38" r="18" fill="%23c7c9d1"/><ellipse cx="50" cy="84" rx="32" ry="24" fill="%23c7c9d1"/></svg>'
+  );
+
+  function updateAvatarPreview(){
+    const src = resolveProfileImg();
+    avatarPreview.onerror = function(){ this.onerror=null; this.src = FALLBACK_AVATAR; };
+    avatarPreview.src = src || FALLBACK_AVATAR;
+  }
+
+  nicknameInput.addEventListener('input', e=>{ state.nickname = e.target.value; renderPreview(); });
+  soopIdInput.addEventListener('input', e=>{ state.soopId = e.target.value; if(state.imgMode==='auto'){updateAvatarPreview(); renderPreview();} });
+
+  document.querySelectorAll('input[name="imgMode"]').forEach(r=>{
+    r.addEventListener('change', e=>{
+      state.imgMode = e.target.value;
+      imgUrlField.style.display = state.imgMode==='url' ? 'block':'none';
+      updateAvatarPreview(); renderPreview();
+    });
+  });
+  imgUrlInput.addEventListener('input', e=>{ state.imgUrl = e.target.value; updateAvatarPreview(); renderPreview(); });
+
+  /* ---------------- Buttons editor ---------------- */
+  function renderButtonEditor(){
+    buttonListEl.innerHTML = '';
+    emptyHint.style.display = state.buttons.length ? 'none' : 'block';
+    state.buttons.forEach((b, idx)=>{
+      const item = document.createElement('div');
+      item.className = 'btn-item';
+      item.innerHTML = `
+        <div class="btn-item-head">
+          <span class="idx">BUTTON ${idx+1}</span>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <div class="move-btns">
+              <button type="button" data-act="up" title="위로">▲</button>
+              <button type="button" data-act="down" title="아래로">▼</button>
+            </div>
+            <button type="button" class="remove-x" data-act="remove" title="삭제">✕</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>링크 이름</label>
+          <input type="text" data-field="label" value="${escapeAttr(b.label)}" placeholder="예) 유튜브 채널" maxlength="24">
+        </div>
+        <div class="field">
+          <label>링크 URL</label>
+          <input type="url" data-field="url" value="${escapeAttr(b.url)}" placeholder="https://...">
+        </div>
+        <div class="field">
+          <label>아이콘</label>
+          <div class="icon-grid" data-field="icongrid">
+            ${Object.keys(ICON_LABELS).map(k=>`
+              <div class="icon-opt${k===b.icon?' selected':''}" data-icon="${k}" title="${ICON_LABELS[k]}">
+                <span class="glyph">${k==='none' ? '<span class="none-dash"></span>' : svg(k,19)}</span>
+                <span class="lbl">${ICON_LABELS[k]}</span>
+              </div>`).join('')}
+          </div>
+        </div>
+      `;
+      // bindings
+      item.querySelector('[data-field="label"]').addEventListener('input', e=>{ b.label = e.target.value; renderPreview(); });
+      item.querySelector('[data-field="url"]').addEventListener('input', e=>{ b.url = e.target.value; renderPreview(); });
+      item.querySelector('[data-field="icongrid"]').addEventListener('click', e=>{
+        const opt = e.target.closest('.icon-opt');
+        if(!opt) return;
+        b.icon = opt.getAttribute('data-icon');
+        item.querySelectorAll('.icon-opt').forEach(el=>el.classList.toggle('selected', el===opt));
+        renderPreview();
+      });
+      item.querySelector('[data-act="remove"]').addEventListener('click', ()=>{
+        state.buttons.splice(idx,1); renderButtonEditor(); renderPreview();
+      });
+      item.querySelector('[data-act="up"]').addEventListener('click', ()=>{
+        if(idx===0) return;
+        [state.buttons[idx-1], state.buttons[idx]] = [state.buttons[idx], state.buttons[idx-1]];
+        renderButtonEditor(); renderPreview();
+      });
+      item.querySelector('[data-act="down"]').addEventListener('click', ()=>{
+        if(idx===state.buttons.length-1) return;
+        [state.buttons[idx+1], state.buttons[idx]] = [state.buttons[idx], state.buttons[idx+1]];
+        renderButtonEditor(); renderPreview();
+      });
+      buttonListEl.appendChild(item);
+    });
+  }
+
+  $('addButtonBtn').addEventListener('click', ()=>{
+    state.buttons.push({id:uid(), label:'새 버튼', url:'', icon:'link', customIcon:''});
+    renderButtonEditor(); renderPreview();
+  });
+
+  /* ---------------- Load saved settings (must run before the bindings below capture object refs) ---------------- */
+  loadSaved();
+
+  /* ---------------- Advanced settings bindings ---------------- */
+  function bindColor(colorId, hexId, obj, key){
+    const c = $(colorId), h = $(hexId);
+    c.addEventListener('input', ()=>{ obj[key]=c.value; h.value=c.value; renderPreview(); });
+    h.addEventListener('input', ()=>{
+      let v = h.value.trim();
+      if(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(v)){ obj[key]=v; c.value = v.length===4 ? expandHex(v) : v; renderPreview(); }
+    });
+  }
+  function expandHex(v){ return '#'+v.slice(1).split('').map(ch=>ch+ch).join(''); }
+
+  function bindRange(rangeId, valId, obj, key, suffix){
+    const r = $(rangeId), v = $(valId);
+    r.addEventListener('input', ()=>{ obj[key]=Number(r.value); v.textContent = r.value+suffix; renderPreview(); });
+  }
+
+  bindRange('avatarSize','avatarSizeVal', state.adv.avatar,'size','px');
+  document.querySelectorAll('input[name="avatarShape"]').forEach(r=>{
+    r.addEventListener('change', e=>{ state.adv.avatar.shape = e.target.value; renderPreview(); });
+  });
+
+  bindColor('cardBg','cardBgHex', state.adv.card, 'bg');
+  bindColor('cardBorderColor','cardBorderColorHex', state.adv.card, 'borderColor');
+  $('cardShadowColor').addEventListener('input', e=>{ state.adv.card.shadowColor = e.target.value; renderPreview(); });
+  bindRange('cardBorderW','cardBorderWVal', state.adv.card,'borderW','px');
+  bindRange('cardShadowOpacity','cardShadowOpacityVal', state.adv.card,'shadowOpacity','%');
+  bindRange('cardShadowAngle','cardShadowAngleVal', state.adv.card,'shadowAngle','°');
+  bindRange('cardShadowDist','cardShadowDistVal', state.adv.card,'shadowDist','px');
+  bindRange('cardShadowBlur','cardShadowBlurVal', state.adv.card,'shadowBlur','px');
+  $('cardBorderStyle').addEventListener('change', e=>{ state.adv.card.borderStyle=e.target.value; renderPreview(); });
+
+  bindColor('btnBg','btnBgHex', state.adv.btn, 'bg');
+  bindColor('btnBorderColor','btnBorderColorHex', state.adv.btn, 'borderColor');
+  $('btnShadowColor').addEventListener('input', e=>{ state.adv.btn.shadowColor = e.target.value; renderPreview(); });
+  bindRange('btnBorderW','btnBorderWVal', state.adv.btn,'borderW','px');
+  bindRange('btnShadowOpacity','btnShadowOpacityVal', state.adv.btn,'shadowOpacity','%');
+  bindRange('btnShadowAngle','btnShadowAngleVal', state.adv.btn,'shadowAngle','°');
+  bindRange('btnShadowDist','btnShadowDistVal', state.adv.btn,'shadowDist','px');
+  bindRange('btnShadowBlur','btnShadowBlurVal', state.adv.btn,'shadowBlur','px');
+  $('btnBorderStyle').addEventListener('change', e=>{ state.adv.btn.borderStyle=e.target.value; renderPreview(); });
+
+  $('fontFamily').addEventListener('change', e=>{ state.adv.font.family=e.target.value; renderPreview(); });
+  bindRange('fontSize','fontSizeVal', state.adv.font,'size','px');
+  bindColor('fontColor','fontColorHex', state.adv.font, 'color');
+
+  /* ---------------- Shadow math ---------------- */
+  function shadowCSS(cfg){
+    const rad = (cfg.shadowAngle) * Math.PI/180;
+    // angle 0 = up, increases clockwise (intuitive dial): dx = sin, dy = -cos
+    const dx = Math.round(Math.sin(rad) * cfg.shadowDist);
+    const dy = Math.round(-Math.cos(rad) * cfg.shadowDist);
+    const rgba = hexToRgba(cfg.shadowColor, cfg.shadowOpacity/100);
+    return `${dx}px ${dy}px ${cfg.shadowBlur}px 0 ${rgba}`;
+  }
+  function hexToRgba(hex, a){
+    hex = hex.replace('#','');
+    if(hex.length===3) hex = hex.split('').map(c=>c+c).join('');
+    const r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+  function escapeAttr(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+  function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ---------------- Live preview render ---------------- */
+  // Custom webfonts need their @font-face declaration shipped WITH the output HTML,
+  // since the target 게시글 page has no idea these fonts exist otherwise.
+  const FONT_FACE_CSS = {
+    Paperozi: "@font-face{font-family:'Paperozi';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');font-weight:700;font-display:swap;}",
+    DoolgiMayoGothic: "@font-face{font-family:'DoolgiMayoGothic';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.1/Dovemayo_gothic.woff2') format('woff2');font-weight:normal;font-display:swap;}",
+    Cafe24Surround: "@font-face{font-family:'Cafe24Surround';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24Ssurround.woff') format('woff');font-weight:normal;font-display:swap;}"
+  };
+  function neededFontFace(family){
+    for(const key in FONT_FACE_CSS){ if(family && family.includes(key)) return FONT_FACE_CSS[key]; }
+    return '';
+  }
+
+  function avatarRadius(av){
+    return av.shape === 'square' ? Math.round(av.size * 0.24) + 'px' : '50%';
+  }
+
+  function renderPreview(){
+    const c = state.adv.card, b = state.adv.btn, f = state.adv.font, av = state.adv.avatar;
+    const imgSrc = resolveProfileImg() || FALLBACK_AVATAR;
+
+    const cardStyle = `
+      background:${c.bg};
+      border:${c.borderW}px ${c.borderStyle} ${c.borderColor};
+      box-shadow:${shadowCSS(c)};
+      border-radius:18px;
+      padding:30px 22px;
+      width:100%;
+      font-family:${f.family};
+      display:flex;flex-direction:column;align-items:center;gap:14px;
+    `;
+    const nameStyle = `font-size:${f.size+2}px;font-weight:400;color:${f.color};`;
+    const idStyle = `font-size:${Math.max(11,f.size-3)}px;color:${f.color};opacity:.55;margin-top:-10px;`;
+
+    let btnsHtml = '';
+    state.buttons.forEach(btn=>{
+      const icon = svg(btn.icon, f.size+3);
+      btnsHtml += `
+        <div style="width:100%;display:flex;align-items:center;gap:10px;justify-content:center;
+          background:${b.bg};border:${b.borderW}px ${b.borderStyle} ${b.borderColor};
+          box-shadow:${shadowCSS(b)};border-radius:12px;padding:12px 16px;color:${f.color};
+          font-size:${f.size}px;font-weight:400;">
+          ${icon ? `<span style="display:inline-flex;color:${f.color};">${icon}</span>` : ''}
+          <span>${escapeHtml(btn.label) || '(이름 없음)'}</span>
+        </div>`;
+    });
+
+    cardTarget.innerHTML = `
+      <div style="${cardStyle}">
+        <img src="${imgSrc}" onerror="this.onerror=null;this.src='${FALLBACK_AVATAR}'" style="width:${av.size}px;height:${av.size}px;border-radius:${avatarRadius(av)};object-fit:cover;background:#222;">
+        <div style="${nameStyle}">${escapeHtml(state.nickname) || '닉네임을 입력하세요'}</div>
+        ${state.soopId ? `<div style="${idStyle}">@${escapeHtml(state.soopId)}</div>` : ''}
+        <div style="width:100%;display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+          ${btnsHtml || '<div style="opacity:.4;font-size:'+f.size+'px;">버튼을 추가해보세요</div>'}
+        </div>
+      </div>
+    `;
+    updateAvatarPreview();
+  }
+
+  /* ---------------- Generate static output HTML ---------------- */
+  function generateOutputHTML(){
+    const c = state.adv.card, b = state.adv.btn, f = state.adv.font, av = state.adv.avatar;
+    const imgSrc = resolveProfileImg() || FALLBACK_AVATAR;
+    const cardStyle = [
+      `background:${c.bg}`,
+      `border:${c.borderW}px ${c.borderStyle} ${c.borderColor}`,
+      `box-shadow:${shadowCSS(c)}`,
+      `border-radius:18px`,
+      `padding:30px 22px`,
+      `max-width:420px`,
+      `margin:0 auto`,
+      `font-family:${f.family}`,
+      `display:flex`,`flex-direction:column`,`align-items:center`,`gap:14px`
+    ].join(';');
+
+    let btnsHtml = '';
+    state.buttons.forEach(btn=>{
+      const icon = iconBgSpan(btn.icon, f.size+3, f.color);
+      const href = btn.url && /^https?:\/\//i.test(btn.url) ? btn.url : (btn.url ? 'https://'+btn.url : '#');
+      btnsHtml += `<a href="${href}" target="_blank" rel="noopener" style="width:100%;box-sizing:border-box;display:flex;align-items:center;gap:10px;justify-content:center;background:${b.bg};border:${b.borderW}px ${b.borderStyle} ${b.borderColor};box-shadow:${shadowCSS(b)};border-radius:12px;padding:12px 16px;color:${f.color};font-size:${f.size}px;font-weight:400;text-decoration:none;">${icon}<span>${escapeHtml(btn.label)}</span></a>\n      `;
+    });
+
+    const fontFaceTag = neededFontFace(f.family) ? `<style>${neededFontFace(f.family)}</style>\n` : '';
+
+    return `${fontFaceTag}<div style="${cardStyle}">
+      <img src="${imgSrc}" style="width:${av.size}px;height:${av.size}px;border-radius:${avatarRadius(av)};object-fit:cover;background:#222;" alt="profile">
+      <div style="font-size:${f.size+2}px;font-weight:400;color:${f.color};">${escapeHtml(state.nickname)}</div>
+      ${state.soopId ? `<div style="font-size:${Math.max(11,f.size-3)}px;color:${f.color};opacity:.55;margin-top:-10px;">@${escapeHtml(state.soopId)}</div>` : ''}
+      <div style="width:100%;box-sizing:border-box;display:flex;flex-direction:column;gap:10px;margin-top:4px;">
+      ${btnsHtml}</div>
+    </div>`;
+  }
+
+  /* ---------------- Modal ---------------- */
+  const modalOverlay = $('modalOverlay');
+  const outputCode = $('outputCode');
+  const copyStatus = $('copyStatus');
+
+  function openMakeModal(){
+    if(!state.nickname.trim()){
+      alert('닉네임을 입력해주세요.');
+      return;
+    }
+    outputCode.value = generateOutputHTML();
+    modalOverlay.classList.add('open');
+  }
+  $('makeBtn').addEventListener('click', openMakeModal);
+  $('makeBtn2').addEventListener('click', openMakeModal);
+  $('modalClose').addEventListener('click', ()=>modalOverlay.classList.remove('open'));
+  $('modalCloseBtn2').addEventListener('click', ()=>modalOverlay.classList.remove('open'));
+  modalOverlay.addEventListener('click', e=>{ if(e.target===modalOverlay) modalOverlay.classList.remove('open'); });
+
+  $('copyBtn').addEventListener('click', ()=>{
+    outputCode.select();
+    let ok = false;
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(outputCode.value);
+        ok = true;
+      }
+    }catch(e){}
+    if(!ok){
+      try{ document.execCommand('copy'); ok = true; }catch(e){}
+    }
+    copyStatus.classList.add('show');
+    setTimeout(()=>copyStatus.classList.remove('show'), 1600);
+  });
+
+  /* ---------------- Save / Reset ---------------- */
+  $('saveBtn').addEventListener('click', ()=>{
+    updateAvatarPreview();
+    renderPreview();
+    try{
+      localStorage.setItem('linkcard_studio_state', JSON.stringify(state));
+      const btn = $('saveBtn');
+      const old = btn.textContent;
+      btn.textContent = '저장됨 ✓';
+      setTimeout(()=>btn.textContent = old, 1400);
+    }catch(e){
+      alert('이 환경에서는 저장 기능을 사용할 수 없어요. (브라우저 저장소 접근 제한)');
+    }
+  });
+
+  $('resetBtn').addEventListener('click', ()=>{
+    if(confirm('모든 설정을 초기화할까요?')){
+      try{ localStorage.removeItem('linkcard_studio_state'); }catch(e){}
+      location.reload();
+    }
+  });
+
+  function loadSaved(){
+    try{
+      const raw = localStorage.getItem('linkcard_studio_state');
+      if(!raw) return;
+      const saved = JSON.parse(raw);
+      state = Object.assign(state, saved);
+      if(!state.adv.avatar) state.adv.avatar = {size:72, shape:'circle'};
+      if(state.imgMode === 'upload') state.imgMode = 'auto';
+      // repopulate form fields from state
+      nicknameInput.value = state.nickname || '';
+      soopIdInput.value = state.soopId || '';
+      document.querySelector('#imgMode'+capitalize(state.imgMode)).checked = true;
+      imgUrlField.style.display = state.imgMode==='url' ? 'block':'none';
+      imgUrlInput.value = state.imgUrl || '';
+
+      $('avatarSize').value = state.adv.avatar.size; $('avatarSizeVal').textContent = state.adv.avatar.size+'px';
+      document.querySelector('#avatarShape'+capitalize(state.adv.avatar.shape)).checked = true;
+
+      $('cardBg').value = state.adv.card.bg; $('cardBgHex').value = state.adv.card.bg;
+      $('cardBorderW').value = state.adv.card.borderW; $('cardBorderWVal').textContent = state.adv.card.borderW+'px';
+      $('cardBorderStyle').value = state.adv.card.borderStyle;
+      $('cardBorderColor').value = state.adv.card.borderColor; $('cardBorderColorHex').value = state.adv.card.borderColor;
+      $('cardShadowColor').value = state.adv.card.shadowColor;
+      $('cardShadowOpacity').value = state.adv.card.shadowOpacity; $('cardShadowOpacityVal').textContent = state.adv.card.shadowOpacity+'%';
+      $('cardShadowAngle').value = state.adv.card.shadowAngle; $('cardShadowAngleVal').textContent = state.adv.card.shadowAngle+'°';
+      $('cardShadowDist').value = state.adv.card.shadowDist; $('cardShadowDistVal').textContent = state.adv.card.shadowDist+'px';
+      $('cardShadowBlur').value = state.adv.card.shadowBlur; $('cardShadowBlurVal').textContent = state.adv.card.shadowBlur+'px';
+
+      $('btnBg').value = state.adv.btn.bg; $('btnBgHex').value = state.adv.btn.bg;
+      $('btnBorderW').value = state.adv.btn.borderW; $('btnBorderWVal').textContent = state.adv.btn.borderW+'px';
+      $('btnBorderStyle').value = state.adv.btn.borderStyle;
+      $('btnBorderColor').value = state.adv.btn.borderColor; $('btnBorderColorHex').value = state.adv.btn.borderColor;
+      $('btnShadowColor').value = state.adv.btn.shadowColor;
+      $('btnShadowOpacity').value = state.adv.btn.shadowOpacity; $('btnShadowOpacityVal').textContent = state.adv.btn.shadowOpacity+'%';
+      $('btnShadowAngle').value = state.adv.btn.shadowAngle; $('btnShadowAngleVal').textContent = state.adv.btn.shadowAngle+'°';
+      $('btnShadowDist').value = state.adv.btn.shadowDist; $('btnShadowDistVal').textContent = state.adv.btn.shadowDist+'px';
+      $('btnShadowBlur').value = state.adv.btn.shadowBlur; $('btnShadowBlurVal').textContent = state.adv.btn.shadowBlur+'px';
+
+      $('fontFamily').value = state.adv.font.family;
+      $('fontSize').value = state.adv.font.size; $('fontSizeVal').textContent = state.adv.font.size+'px';
+      $('fontColor').value = state.adv.font.color; $('fontColorHex').value = state.adv.font.color;
+    }catch(e){ /* ignore corrupted / inaccessible storage */ }
+  }
+  function capitalize(s){ return s ? s.charAt(0).toUpperCase()+s.slice(1) : ''; }
+
+  /* ---------------- Init ---------------- */
+  renderButtonEditor();
+  renderPreview();
+
+})();
+</script>
+</body>
+</html>
