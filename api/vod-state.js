@@ -15,8 +15,8 @@ function validId(value) {
 }
 
 async function redis(command) {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
   if (!url || !token) throw new Error('REDIS_NOT_CONFIGURED');
   const response = await fetch(url, {
     method: 'POST',

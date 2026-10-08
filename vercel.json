@@ -1,12 +1,17 @@
 {
+  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/api/vod-state/:channel",
-      "destination": "/api/vod-state.js?channel=:channel"
+      "destination": "/api/vod-state?channel=:channel"
     },
     {
       "source": "/vod-overlay/:channel",
-      "destination": "/vod-overlay.html?channel=:channel"
+      "destination": "/vod-overlay?channel=:channel"
+    },
+    {
+      "source": "/score-overlay",
+      "destination": "/score-overlay/index.html"
     },
     {
       "source": "/api/comment",

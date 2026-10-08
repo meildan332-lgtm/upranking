@@ -334,6 +334,7 @@
     </style>
 </head>
 <body>
+<a href="/" style="position:fixed;top:16px;left:20px;z-index:100;color:#5b5ff5;background:#fff;padding:9px 14px;border-radius:9px;text-decoration:none;font-size:13px;font-weight:700">목록으로 가기</a>
     <div class="login-screen" id="loginScreen">
         <div class="login-card">
             <h1>스코어 컨트롤러</h1>
@@ -456,7 +457,7 @@
             const currentUrl = window.location.href.split('?')[0];
             const basePath = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
             const query = new URLSearchParams({ sheet: scoreSheet, theme: currentTheme });
-            const overlayUrl = basePath + '/overlay.html?' + query.toString();
+            const overlayUrl = window.location.origin + '/score-overlay/overlay?' + query.toString();
 
             navigator.clipboard.writeText(overlayUrl).then(() => {
                 alert("OBS 오버레이용 주소가 복사되었습니다!\nOBS 브라우저 소스 URL에 붙여넣기 하세요.");
