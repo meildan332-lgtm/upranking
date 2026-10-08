@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+    <style>
+        :root {
+            --font-ui: 'Pretendard Variable', 'Pretendard', '맑은 고딕', sans-serif;
+            --font-score: 'Orbitron', sans-serif;
+            --card-radius: 14px;
+            --score-size: 80px;
+            --name-size: 34px;
+        }
+        body[data-theme="pixel"] {
+            --font-score: 'Press Start 2P', 'Pretendard Variable', sans-serif;
+            --card-radius: 24px;
+            --score-size: 65px;
+            --name-size: 31px;
+        }
+        body[data-theme="minecraft"] {
+            --font-score: 'Press Start 2P', 'Pretendard Variable', sans-serif;
+            --card-radius: 16px;
+            --score-size: 65px;
+            --name-size: 31px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body {
+            height: 100%;
+        }
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: var(--font-ui);
+            background-color: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+
+        .scoreboard { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; }
+
+        .team-card {
+            position: relative;
+            background: rgba(10, 12, 18, 0.95);
+            color: #eef2f8;
+            border-radius: var(--card-radius);
+            width: 360px;
+            padding: 27px 30px 30px;
+            box-shadow: 0 14px 34px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08) inset;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: box-shadow 0.3s ease;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            will-change: transform;
+        }
+        .team-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 7px;
+            background: var(--team-color, #888);
+        }
+
+        /* Design 2: original pixel card */
+        body[data-theme="pixel"] .team-card {
+            background: rgba(10, 12, 18, 0.95);
+            color: #f2f2fb;
+            border: none;
+            outline: none;
+            box-shadow: 6px 6px 0 rgba(0,0,0,0.35);
+            width: 320px;
+            padding: 30px 27px 27px;
+        }
+        body[data-theme="pixel"] .team-card::before {
+            display: block;
+            height: 9px;
+            border-radius: var(--card-radius) var(--card-radius) 0 0;
+        }
+
+        /* Design 3: Minecraft tournament-inspired block HUD */
+        body[data-theme="minecraft"] .team-card {
+            background-color: rgba(72, 56, 48, 0.95);
+            background-image:
+                linear-gradient(90deg, rgba(255,255,255,0.035) 50%, transparent 50%),
+                linear-gradient(rgba(255,255,255,0.025) 50%, transparent 50%),
+                linear-gradient(135deg, rgba(255,255,255,0.055) 25%, transparent 25% 75%, rgba(0,0,0,0.08) 75%);
+            background-size: 16px 16px, 16px 16px, 32px 32px;
+            color: #fff4dc;
+            border: 4px solid #715743;
+            outline: none;
+            box-shadow:
+                6px 6px 0 rgba(39,30,25,0.48),
+                inset 0 0 0 2px #b59570;
+            width: 320px;
+            padding: 38px 23px 29px;
+            image-rendering: pixelated;
+        }
+        body[data-theme="minecraft"] .team-card::before {
+            display: block;
+            top: 0; left: 0; right: 0;
+            height: 20px;
+            background:
+                repeating-linear-gradient(90deg, transparent 0 20px, rgba(255,255,255,0.18) 20px 28px, transparent 28px 44px),
+                linear-gradient(#bde78a 0 6px, #8fc965 6px 14px, #679a49 14px);
+            border-radius: 0;
+            clip-path: polygon(0 0,100% 0,100% 75%,86% 75%,86% 100%,76% 100%,76% 75%,54% 75%,54% 100%,44% 100%,44% 75%,20% 75%,20% 100%,10% 100%,10% 75%,0 75%);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        body[data-theme="pixel"] .header,
+        body[data-theme="minecraft"] .header {
+            margin-bottom: 18px;
+            margin-top: -6px;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .team-name {
+            font-size: var(--name-size);
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            line-height: 1.3;
+            padding-top: 2px;
+        }
+        body[data-theme="pixel"] .team-name,
+        body[data-theme="minecraft"] .team-name {
+            font-family: var(--font-score);
+            line-height: 1.35;
+            padding: 2px 0;
+            white-space: nowrap;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        body[data-theme="minecraft"] .team-name { text-shadow: 2px 2px 0 #30271f; }
+
+        .rank-badge {
+            flex-shrink: 0;
+            font-family: var(--font-score);
+            font-size: 19px;
+            font-weight: 700;
+            padding: 8px 16px 8px 13px;
+            border-radius: 7px 16px 16px 7px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #2a3448;
+            color: #c3ccdb;
+        }
+        .rank-badge.rank-1 { background: linear-gradient(120deg, #ffe08a, #d9a441); color: #3a2600; }
+        .rank-badge.rank-2 { background: linear-gradient(120deg, #eef1f5, #b9c2cf); color: #2b2f36; }
+        .rank-badge.rank-3 { background: linear-gradient(120deg, #e3a874, #b06f3d); color: #2e1a0a; }
+
+        body[data-theme="pixel"] .rank-badge {
+            font-size: 13px; border-radius: 7px 19px 19px 7px; padding: 8px 15px 8px 12px;
+            background: #2a2c54; color: #f2f2fb;
+            border: none;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.35);
+        }
+        body[data-theme="pixel"] .rank-badge.rank-1 { background: #e8c341; color: #4a3a00; }
+        body[data-theme="pixel"] .rank-badge.rank-2 { background: #d7d7d7; color: #333; }
+        body[data-theme="pixel"] .rank-badge.rank-3 { background: #c07a3e; color: #2e1a0a; }
+
+        body[data-theme="minecraft"] .rank-badge {
+            font-size: 12px;
+            border-radius: 8px;
+            padding: 9px 11px;
+            background: #c1dca8;
+            color: #34462c;
+            border: 2px solid #748860;
+            box-shadow: inset 0 3px 0 rgba(255,255,255,0.4), 3px 3px 0 rgba(39,30,25,0.3);
+            text-shadow: none;
+        }
+        body[data-theme="minecraft"] .rank-badge.rank-1 { background: #ffe29a; color: #60461e; border-color: #b99a54; }
+        body[data-theme="minecraft"] .rank-badge.rank-2 { background: #cce9ed; color: #35565e; border-color: #80a9b0; }
+        body[data-theme="minecraft"] .rank-badge.rank-3 { background: #f5c3ab; color: #684333; border-color: #b5866c; }
+
+        .score-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            text-align: center;
+        }
+        body[data-theme="pixel"] .score-container,
+        body[data-theme="minecraft"] .score-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: baseline;
+            text-align: center;
+        }
+
+        .score {
+            font-family: var(--font-score);
+            font-size: var(--score-size);
+            font-weight: 700;
+            line-height: 1;
+        }
+        body[data-theme="pixel"] .score {
+            color: var(--team-color, #38bdf8);
+        }
+        body[data-theme="minecraft"] .score {
+            color: var(--team-color, #74d04c);
+            text-shadow: 3px 3px 0 #261e19, -1px -1px 0 #261e19, 1px -1px 0 #261e19, -1px 1px 0 #261e19;
+        }
+
+        .score-unit { font-size: 30px; font-weight: 600; color: #9ca3af; margin-left: 6px; }
+        body[data-theme="pixel"] .score-unit {
+            font-size: 26px;
+            color: #9ca3af;
+        }
+        body[data-theme="minecraft"] .score-unit {
+            font-size: 26px;
+            color: #c8bfb4;
+            text-shadow: 2px 2px 0 #30271f;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scoreboard" id="scoreboard"></div>
+
+    <script>
+        // theme=broadcast(베이직), pixel(픽셀), minecraft(마인크래프트)
+        const params = new URLSearchParams(window.location.search);
+        const requestedTheme = params.get('theme');
+        document.body.dataset.theme = ['pixel', 'minecraft'].includes(requestedTheme) ? requestedTheme : 'broadcast';
+        const scoreSheet = params.get('sheet') || '';
+
+        const scoreboardEl = document.getElementById('scoreboard');
+
+        // ★ 앱스 스크립트 웹 앱 URL ★
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwEqwZjVQ6fP-9W7l_YrNogTizhhPgchNDkMHAcq_J8gwKKOtLGCUizQ9X07Z320d5RbQ/exec';
+
+        let teams = [];
+
+        function render() {
+            const previousCards = Array.from(scoreboardEl.querySelectorAll('.team-card'));
+            const previousPositions = new Map();
+            const previousRanks = new Map();
+            previousCards.forEach(card => {
+                previousPositions.set(card.dataset.teamId, card.getBoundingClientRect());
+                previousRanks.set(card.dataset.teamId, Number(card.dataset.rankIndex));
+            });
+
+            scoreboardEl.innerHTML = '';
+            const renderedCards = [];
+            teams.forEach((team, index) => {
+                const card = document.createElement('div');
+                card.className = 'team-card';
+                card.dataset.teamId = String(team.id);
+                card.dataset.rankIndex = String(index);
+                card.style.setProperty('--team-color', team.color);
+
+                card.innerHTML = `
+                    <div class="header">
+                        <span class="team-name">${team.name}</span>
+                        <div class="rank-badge ${team.rankClass}">${team.rankText}</div>
+                    </div>
+                    <div class="score-container">
+                        <span class="score">${team.score}</span>
+                        <span class="score-unit">점</span>
+                    </div>
+                `;
+                scoreboardEl.appendChild(card);
+                renderedCards.push(card);
+            });
+
+            renderedCards.forEach(card => {
+                const teamId = card.dataset.teamId;
+                const oldPosition = previousPositions.get(teamId);
+                const oldRank = previousRanks.get(teamId);
+                const newRank = Number(card.dataset.rankIndex);
+                if (!oldPosition || oldRank === newRank) return;
+
+                const newPosition = card.getBoundingClientRect();
+                const deltaX = oldPosition.left - newPosition.left;
+                const deltaY = oldPosition.top - newPosition.top;
+                card.animate([
+                    { transform: `translate(${deltaX}px, ${deltaY}px)`, zIndex: 10 },
+                    { transform: 'translate(0, 0)', zIndex: 10 }
+                ], {
+                    duration: 700,
+                    easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+                    fill: 'none'
+                });
+            });
+        }
+
+        async function fetchScoreData() {
+            try {
+                if (!scoreSheet) throw new Error('시트 번호가 없습니다. 컨트롤러에서 주소를 다시 복사하세요.');
+                const response = await fetch(WEB_APP_URL + '?sheet=' + encodeURIComponent(scoreSheet));
+                const responseText = await response.text();
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (_) {
+                    throw new Error('Apps Script 배포 또는 접근 권한을 확인하세요.');
+                }
+                if (!result.ok) throw new Error(result.error || '데이터를 불러오지 못했습니다.');
+                let rawTeams = result.teams;
+
+                rawTeams.sort((a, b) => b.score - a.score);
+
+                let currentRank = 1;
+                for (let i = 0; i < rawTeams.length; i++) {
+                    if (i > 0 && rawTeams[i].score < rawTeams[i-1].score) {
+                        currentRank = i + 1;
+                    }
+
+                    let medal = '';
+                    let rankClass = 'rank-other';
+                    if (currentRank === 1) { medal = '🥇 '; rankClass = 'rank-1'; }
+                    else if (currentRank === 2) { medal = '🥈 '; rankClass = 'rank-2'; }
+                    else if (currentRank === 3) { medal = '🥉 '; rankClass = 'rank-3'; }
+
+                    rawTeams[i].rankText = medal + currentRank + '위';
+                    rawTeams[i].rankClass = rankClass;
+                }
+
+                teams = rawTeams;
+                render();
+            } catch (error) {
+                console.error("데이터 동기화 실패:", error);
+            }
+        }
+
+        fetchScoreData();
+        setInterval(fetchScoreData, 3000);
+    </script>
+</body>
+</html>
