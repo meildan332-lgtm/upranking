@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/vod-state/:channel",
+      "destination": "/api/vod-state.js?channel=:channel"
+    },
+    {
+      "source": "/vod-overlay/:channel",
+      "destination": "/vod-overlay.html?channel=:channel"
+    },
+    {
       "source": "/api/comment",
       "destination": "/api/comment.js"
     }

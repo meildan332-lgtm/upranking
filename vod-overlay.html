@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SOOP VOD Overlay</title>
+  <style>
+    *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:transparent}body{font-family:Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif}.wrap{position:absolute;left:4%;right:4%;bottom:7%;transition:opacity .3s}.wrap.offline{opacity:.58}.card{padding:22px 25px 19px;border-radius:10px;color:#fff;background:rgba(0,0,0,.9)}.top{display:flex;align-items:center;justify-content:space-between;gap:28px;min-width:0}.title{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:25px;font-weight:800;letter-spacing:-.025em}.time{flex:none;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.timeline{height:6px;margin-top:17px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.25)}.progress{width:0;height:100%;border-radius:inherit;background:#fff;transition:width .25s linear}@media(max-width:700px){.card{padding:16px 18px 14px}.title{font-size:19px}.time{font-size:16px}.wrap{left:3%;right:3%;bottom:5%}}
+  </style>
+</head>
+<body>
+  <main id="wrap" class="wrap offline"><section class="card"><div class="top"><div id="title" class="title">SOOP VOD 연결 대기 중</div><div id="time" class="time">00:00 / 00:00</div></div><div class="timeline"><div id="progress" class="progress"></div></div></section></main>
+  <script>
+    const channel=new URLSearchParams(location.search).get('channel')||location.pathname.split('/').filter(Boolean).pop(),el=id=>document.getElementById(id);function fmt(v){const s=Math.max(0,Math.floor(Number(v)||0)),h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return h?h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'):String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}async function update(){try{const r=await fetch('/api/vod-state/'+encodeURIComponent(channel),{cache:'no-store'}),s=await r.json();if(!r.ok)throw new Error(s.error||'offline');el('title').textContent=s.title||'제목 없음';el('time').textContent=fmt(s.currentTime)+' / '+fmt(s.duration);el('progress').style.width=(s.duration>0?Math.min(100,s.currentTime/s.duration*100):0)+'%';el('wrap').classList.toggle('offline',!s.connected)}catch{el('wrap').classList.add('offline')}}update();setInterval(update,1000);
+  </script>
+</body>
+</html>
