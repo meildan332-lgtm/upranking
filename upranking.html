@@ -135,6 +135,20 @@
             color: var(--ink-500);
             line-height: 1.5;
         }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0;
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            width: 17px;
+            height: 17px;
+            margin: 0;
+            accent-color: var(--accent);
+            flex: 0 0 auto;
+        }
 
         input[type="text"],
         input[type="number"],
@@ -398,6 +412,14 @@
                         <label>마감 일자 (선택)</label>
                         <input type="date" id="deadline">
                     </div>
+                </div>
+
+                <div class="form-group" style="margin-top:14px;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="showCutoffGap">
+                        내 순위 카드 위에 커트라인 UP 차이 표시
+                    </label>
+                    <p class="field-hint">예: 커트라인이 45위라면 45위와 46위의 UP 수 차이를 표시합니다.</p>
                 </div>
             </div>
 
@@ -684,6 +706,7 @@
                 : selectedPointColor;
             const link = document.getElementById('targetLink').value;
             const cutoff = document.getElementById('cutoff').value;
+            const showCutoffGap = document.getElementById('showCutoffGap').checked;
             const deadline = document.getElementById('deadline').value;
             const pinMode = document.querySelector('input[name="pinMode"]:checked').value;
             const pinNicknamesRaw = document.getElementById('pinNicknames').value;
@@ -702,6 +725,10 @@
             const baseUrl = window.location.origin + '/obs_widget_v6.html';
 
             let finalUrl = `${baseUrl}?url=${encodeURIComponent(link)}&cutoff=${cutoff}&mode=${mode}&qr=${qrMode}&font=${encodeURIComponent(font)}&pin=${pinMode}&design=${encodeURIComponent(designMode)}&theme=${encodeURIComponent(themeMode)}&background=${encodeURIComponent(backgroundMode)}&color=${encodeURIComponent(pointColor)}`;
+
+            if (showCutoffGap) {
+                finalUrl += '&cutoffGap=on';
+            }
 
             if (contentTitle.trim()) {
                 finalUrl += `&title=${encodeURIComponent(contentTitle.trim())}`;

@@ -266,10 +266,10 @@
         /* 커트라인: 자체 높이를 가진 행으로 분리해서 위/아래 댓글에 절대 가려지지 않도록 함 */
         .cutoff-row {
             position: relative;
-            height: 34px;
+            height: 40px;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-end;
         }
         .cutoff-row::before {
             content: "";
@@ -282,12 +282,24 @@
         .cutoff-text {
             position: relative;
             z-index: 1;
-            background: var(--accent-color, #FF1744);
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            padding: 4px 12px;
-            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--container-bg);
+            color: var(--text-primary);
+            padding-left: 12px;
+        }
+        .cutoff-label {
+            font-size: 14px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .cutoff-value {
+            min-width: 58px;
+            font-size: 32px;
+            line-height: 1;
+            font-weight: 900;
+            text-align: right;
         }
 
         .grayed-out { filter: grayscale(100%); opacity: 0.5; }
@@ -376,7 +388,7 @@
         }
         body.design-ios .pinned-comment .rank-number,
         body.design-ios .pinned-comment .nickname { color: #fff; }
-        body.design-ios .cutoff-text { border: 3px solid rgba(255,255,255,.8); border-radius: 999px; padding: 6px 18px; box-shadow: none; }
+        body.design-ios .cutoff-text { border: 0; border-radius: 0; padding: 0 0 0 12px; box-shadow: none; }
         body.design-ios .qr-section { border: 2px solid rgba(var(--accent-color-rgb), .5); border-radius: 26px; box-shadow: none; }
         body.design-ios .qr-image { border: 4px solid #fff; border-radius: 22px; box-shadow: none; }
         body.design-ios .qr-profile-image { box-shadow: none; }
@@ -721,6 +733,7 @@ async function fetchRealComments() {
     const targetCommentId = match ? match[1] : null;
 
     const cutoff = parseInt(urlParams.get('cutoff'), 10) || 0;
+    const showCutoffGap = urlParams.get('cutoffGap') === 'on';
     const mode = urlParams.get('mode') || 'mine';
     const pinEnabled = urlParams.get('pin') !== 'off';
     const aroundUp = parseInt(urlParams.get('aroundUp'), 10);
@@ -748,7 +761,7 @@ async function fetchRealComments() {
         const data = await response.json();
         console.log("SOOP 원본 데이터:", data);
 
-        renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown, pinEnabled, pinNicknames);
+        renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown, pinEnabled, pinNicknames, showCutoffGap);
 
         const updateEl = document.getElementById("update-time-display");
         if (updateEl) {
@@ -792,7 +805,7 @@ function updateQrProfileImage(comment) {
 }
 
 // 3. 댓글 목록 업데이트 (지우고 다시 그리는 대신, 기존 엘리먼트 재사용 + 순서만 이동)
-function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown, pinEnabled, pinNicknames) {
+function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown, pinEnabled, pinNicknames, showCutoffGap) {
     const listContainer = document.getElementById("comment-list");
     if (!listContainer) return;
 
@@ -866,9 +879,24 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
     // 이번 새로고침에서 보여야 할 행(row) 순서 계산
     const rows = [];
 
+    // 커트라인 경계에서의 좋아요 차이 계산 (전체 순위 기준, 필터링된 목록과 무관하게 항상 정확)
+    let cutoffDiff = null;
+    if (showCutoffGap && cutoff > 0 && rankedComments.length > cutoff) {
+        const aboveComment = rankedComments[cutoff - 1];
+        const belowComment = rankedComments[cutoff];
+        const aboveUp = aboveComment.likeCnt ?? aboveComment.up_cnt ?? aboveComment.good_cnt ?? 0;
+        const belowUp = belowComment.likeCnt ?? belowComment.up_cnt ?? belowComment.good_cnt ?? 0;
+        cutoffDiff = Math.max(0, aboveUp - belowUp);
+    }
+
+    const canShowCutoffGap = showCutoffGap && cutoffDiff !== null && pinnedComment;
+
     // 상단 고정 카드 (켜기 상태이거나, "내 순위만 보기" 모드일 때만 표시)
     const showPinnedCard = pinnedComment && (pinEnabled || mode === 'mine');
     if (showPinnedCard) {
+        if (canShowCutoffGap) {
+            rows.push({ key: 'cutoff-gap', type: 'cutoff', diff: cutoffDiff });
+        }
         const upCount = pinnedComment.likeCnt ?? pinnedComment.up_cnt ?? pinnedComment.good_cnt ?? 0;
         const prevStats = commentStats.get('pinned');
         const rankDelta = prevStats ? prevStats.rank - pinnedRank : 0;
@@ -888,24 +916,14 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
         commentStats.set(statKey, { rank, upCount });
     });
 
-    // 커트라인 경계에서의 좋아요 차이 계산 (전체 순위 기준, 필터링된 목록과 무관하게 항상 정확)
-    let cutoffDiff = null;
-    if (cutoff > 0 && rankedComments.length > cutoff) {
-        const aboveComment = rankedComments[cutoff - 1];
-        const belowComment = rankedComments[cutoff];
-        const aboveUp = aboveComment.likeCnt ?? aboveComment.up_cnt ?? aboveComment.good_cnt ?? 0;
-        const belowUp = belowComment.likeCnt ?? belowComment.up_cnt ?? belowComment.good_cnt ?? 0;
-        cutoffDiff = aboveUp - belowUp;
-    }
-
     // 아래 랭킹 목록: 내 댓글도 실제 순위 자리에 함께 표시됨 (위 고정 카드와는 별개의 DOM으로 관리)
-    let cutoffDrawn = false;
+    let cutoffGapDrawn = showPinnedCard;
     visibleComments.forEach(({ comment, rank }) => {
-        if (cutoff > 0 && rank === cutoff + 1 && !cutoffDrawn) {
-            rows.push({ key: 'cutoff-line', type: 'cutoff', diff: cutoffDiff });
-            cutoffDrawn = true;
-        }
         const isMine = comment === pinnedComment;
+        if (isMine && canShowCutoffGap && !cutoffGapDrawn) {
+            rows.push({ key: 'cutoff-gap', type: 'cutoff', diff: cutoffDiff });
+            cutoffGapDrawn = true;
+        }
         const nickPinMatch = nickPinnedList.find(n => n.comment === comment);
         const isNickPinned = !!nickPinMatch;
         const isBelowCutoff = cutoff > 0 && rank > cutoff;
@@ -1002,19 +1020,19 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
 }
 
 function cutoffLabel(diff) {
-    if (diff === null || diff === undefined || Number.isNaN(diff)) return '컷 라인';
-    return `${Math.abs(diff)}개 차이`;
+    if (diff === null || diff === undefined || Number.isNaN(diff)) return '';
+    return String(Math.abs(diff));
 }
 
 function createCutoffElement(diff) {
     const row = document.createElement("div");
     row.className = "cutoff-row";
-    row.innerHTML = `<span class="cutoff-text">${cutoffLabel(diff)}</span>`;
+    row.innerHTML = `<span class="cutoff-text"><span class="cutoff-label">UP 차이</span><strong class="cutoff-value">${cutoffLabel(diff)}</strong></span>`;
     return row;
 }
 
 function updateCutoffElement(el, diff) {
-    const span = el.querySelector('.cutoff-text');
+    const span = el.querySelector('.cutoff-value');
     const label = cutoffLabel(diff);
     if (span && span.textContent !== label) span.textContent = label;
 }
