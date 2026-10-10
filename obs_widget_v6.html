@@ -141,7 +141,6 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            perspective: 500px;
         }
         .countdown-unit { display: inline-flex; align-items: flex-end; gap: 5px; }
         .countdown-value {
@@ -167,13 +166,6 @@
             color: var(--text-primary);
             font-size: 15px;
             font-weight: 800;
-        }
-        .countdown-value.is-flipping { animation: countdownFlip .42s ease; }
-        @keyframes countdownFlip {
-            0% { transform: rotateX(0deg); }
-            45% { transform: rotateX(-72deg) scaleY(.92); opacity: .45; }
-            55% { transform: rotateX(55deg) scaleY(.92); opacity: .55; }
-            100% { transform: rotateX(0deg); opacity: 1; }
         }
         body:not(.theme-light) .countdown-value {
             border-color: #555;
@@ -830,9 +822,6 @@ function startDeadlineCountdown(element, deadlineValue) {
         const nextValue = String(value).padStart(2, '0');
         if (valueElement.textContent === nextValue) return;
         valueElement.textContent = nextValue;
-        valueElement.classList.remove('is-flipping');
-        void valueElement.offsetWidth;
-        valueElement.classList.add('is-flipping');
     };
 
     const update = () => {
