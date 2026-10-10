@@ -206,38 +206,43 @@
             white-space: nowrap;
         }
         body:not(.design-ios) .up-col {
-            position: relative;
             margin-left: 12px;
-            padding-left: 12px;
+            padding-left: 8px;
             font-size: 17px;
             color: var(--text-primary);
-            min-width: 84px;
+            min-width: 110px;
             justify-content: flex-end;
             flex-shrink: 0;
-            transform: translateX(-23px);
             order: 4;
         }
+        body:not(.design-ios) .up-col::before {
+            content: "UP";
+            order: 2;
+            margin-right: -2px;
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: 0.02em;
+        }
+        body:not(.design-ios) .up-count {
+            order: 3;
+        }
         body:not(.design-ios) .up-delta-slot {
-            position: absolute;
-            left: 100%;
-            right: auto;
-            top: 50%;
+            order: 1;
             display: inline-flex;
             align-items: center;
-            margin-left: 4px;
+            margin-right: 2px;
             font-size: 12px;
             line-height: 1;
             white-space: nowrap;
-            transform: translateY(-50%);
         }
         body:not(.design-ios) .up-delta-slot .delta-arrow {
             margin-right: 1px;
             font-size: 10px;
         }
         body:not(.design-ios) .thumb-icon {
-            color: var(--accent-color, #FF3B30);
-            fill: currentColor;
-            stroke: none;
+            display: none;
         }
         body:not(.design-ios) .userid,
         body:not(.design-ios) .rank-delta-slot,
