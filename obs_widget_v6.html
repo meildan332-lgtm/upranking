@@ -531,9 +531,14 @@
         }
         body.design-ios.theme-light .profile-pic { border: none; }
         body.design-ios.theme-light .pinned-comment {
-            border: 2px solid #aaa;
+            border: 2px solid #d9d9de !important;
+            outline: none !important;
             background: #fff3b0;
-            box-shadow: none;
+            box-shadow: none !important;
+        }
+        body.design-ios.theme-light .pinned-comment.grayed-out {
+            filter: none;
+            opacity: 1;
         }
         body.design-ios.theme-light .pinned-comment .rank-number,
         body.design-ios.theme-light .pinned-comment .nickname {
