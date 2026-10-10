@@ -288,7 +288,7 @@
             content: "";
             position: absolute;
             left: 4px;
-            right: 172px;
+            right: 132px;
             top: 50%;
             height: 2px;
             background-color: var(--accent-color, #FF1744);
@@ -310,14 +310,14 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            min-width: 158px;
+            min-width: 118px;
             justify-content: flex-end;
-            background: var(--card-bg);
+            background: transparent;
             color: var(--text-primary);
-            padding: 6px 10px 6px 12px;
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
-            box-shadow: 0 3px 8px var(--card-shadow);
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
         }
         .cutoff-label {
             font-size: 12px;
@@ -420,7 +420,7 @@
         }
         body.design-ios .pinned-comment .rank-number,
         body.design-ios .pinned-comment .nickname { color: #fff; }
-        body.design-ios .cutoff-text { border: 2px solid rgba(var(--accent-color-rgb), .28); border-radius: 16px; padding: 6px 10px 6px 12px; box-shadow: none; }
+        body.design-ios .cutoff-text { border: 0; border-radius: 0; padding: 0; box-shadow: none; }
         body.design-ios .qr-section { border: 2px solid rgba(var(--accent-color-rgb), .5); border-radius: 26px; box-shadow: none; }
         body.design-ios .qr-image { border: 4px solid #fff; border-radius: 22px; box-shadow: none; }
         body.design-ios .qr-profile-image { box-shadow: none; }
@@ -1064,8 +1064,8 @@ function cutoffLabel(diff) {
     return String(Math.abs(diff));
 }
 
-function cutoffGapLabel(comparisonRank) {
-    return `${comparisonRank}위와 UP 차이`;
+function cutoffGapLabel() {
+    return 'UP 차이';
 }
 
 function createCutoffElement(diff, comparisonRank) {
