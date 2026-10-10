@@ -259,8 +259,14 @@
             min-height: 76px;
         }
         body:not(.design-ios):not(.theme-light) .pinned-comment {
-            background: rgba(0, 0, 0, 0.9);
+            background: #333;
             border-color: #777;
+        }
+        body:not(.design-ios):not(.theme-light) .comment-box:not(.pinned-comment) {
+            background: #000;
+        }
+        body:not(.design-ios):not(.theme-light) .comment-box.grayed-out {
+            opacity: 1;
         }
         body:not(.design-ios) .pinned-comment .profile-pic {
             width: 76px;
@@ -275,13 +281,13 @@
             font-size: 22px;
             min-width: 100px;
         }
-        body:not(.design-ios).theme-light .comment-box:not(.pinned-comment) .up-col,
-        body:not(.design-ios).theme-light .comment-box:not(.pinned-comment) .thumb-icon {
-            color: var(--text-primary);
+        body:not(.design-ios).theme-light .comment-box .up-col,
+        body:not(.design-ios).theme-light .comment-box .thumb-icon {
+            color: #1a1d29;
         }
-        body:not(.design-ios).theme-light .pinned-comment .up-col,
-        body:not(.design-ios).theme-light .pinned-comment .thumb-icon {
-            color: var(--accent-color, #FF3B30);
+        body:not(.design-ios):not(.theme-light) .comment-box .up-col,
+        body:not(.design-ios):not(.theme-light) .comment-box .thumb-icon {
+            color: #fff;
         }
 
         /* 실제 순위 목록 안의 내 댓글은 강조 색상만 유지하고 다른 카드와 같은 크기로 표시 */
@@ -447,7 +453,7 @@
         }
         body.design-ios .pinned-comment {
             border-radius: 26px;
-            border-color: #d5ad24;
+            border: 2px solid #999;
             background: linear-gradient(135deg, rgba(72, 59, 8, 0.98), rgba(38, 31, 3, 0.98));
             box-shadow: none;
         }
@@ -468,7 +474,7 @@
             opacity: 1;
         }
         body.design-ios:not(.theme-light) .pinned-comment {
-            border-color: #777;
+            border-color: #999;
             background: #555;
         }
         body.design-ios:not(.theme-light) .pinned-comment.grayed-out {
@@ -501,7 +507,7 @@
         }
         body.design-ios.theme-light .profile-pic { border: none; }
         body.design-ios.theme-light .pinned-comment {
-            border: 2px solid #b8bac2;
+            border: 2px solid #aaa;
             background: #fff3b0;
             box-shadow: none;
         }
