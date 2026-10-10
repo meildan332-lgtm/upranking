@@ -132,16 +132,55 @@
         .deadline-countdown {
             display: none;
             width: 100%;
-            padding: 12px 16px;
-            border: 1px solid var(--card-border);
-            border-radius: 12px;
+            padding: 4px 0;
+            border: 0;
             box-sizing: border-box;
-            background: var(--card-bg);
+            background: transparent;
             color: var(--text-primary);
-            font-size: 20px;
-            font-weight: 900;
-            text-align: center;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            perspective: 500px;
         }
+        .countdown-unit { display: inline-flex; align-items: flex-end; gap: 5px; }
+        .countdown-value {
+            display: inline-flex;
+            min-width: 54px;
+            height: 54px;
+            padding: 0 7px;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            border: 1px solid rgba(120, 145, 175, .28);
+            border-radius: 5px;
+            background: rgba(225, 239, 251, .92);
+            color: #101820;
+            font-size: 34px;
+            font-weight: 900;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            transform-origin: center;
+        }
+        .countdown-label {
+            padding-bottom: 7px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 800;
+        }
+        .countdown-value.is-flipping { animation: countdownFlip .42s ease; }
+        @keyframes countdownFlip {
+            0% { transform: rotateX(0deg); }
+            45% { transform: rotateX(-72deg) scaleY(.92); opacity: .45; }
+            55% { transform: rotateX(55deg) scaleY(.92); opacity: .55; }
+            100% { transform: rotateX(0deg); opacity: 1; }
+        }
+        body:not(.theme-light) .countdown-value {
+            border-color: #555;
+            background: #292a2e;
+            color: #fff;
+        }
+        .countdown-ended { font-size: 22px; color: var(--text-primary); }
 
         /* 댓글 목록 자체에 간격을 줘서 커트라인/다음 댓글이 서로 겹치지 않도록 함 */
         #comment-list { display: flex; flex-direction: column; gap: 10px; }
@@ -777,10 +816,29 @@ function startDeadlineCountdown(element, deadlineValue) {
         return;
     }
 
+    element.innerHTML = ['days', 'hours', 'minutes', 'seconds'].map((key) => {
+        const labels = { days: '일', hours: '시간', minutes: '분', seconds: '초' };
+        return `<span class="countdown-unit" data-unit="${key}"><strong class="countdown-value">--</strong><span class="countdown-label">${labels[key]}</span></span>`;
+    }).join('');
+
+    const setValue = (key, value) => {
+        const unit = element.querySelector(`[data-unit="${key}"]`);
+        const valueElement = unit?.querySelector('.countdown-value');
+        if (!unit || !valueElement) return;
+        if (key === 'days') unit.style.display = value === 0 ? 'none' : 'inline-flex';
+
+        const nextValue = String(value).padStart(2, '0');
+        if (valueElement.textContent === nextValue) return;
+        valueElement.textContent = nextValue;
+        valueElement.classList.remove('is-flipping');
+        void valueElement.offsetWidth;
+        valueElement.classList.add('is-flipping');
+    };
+
     const update = () => {
         const remaining = Math.max(0, deadlineTime - Date.now());
         if (remaining <= 0) {
-            element.textContent = '마감되었습니다';
+            element.innerHTML = '<strong class="countdown-ended">마감되었습니다</strong>';
             if (window.deadlineCountdownTimer) clearInterval(window.deadlineCountdownTimer);
             return;
         }
@@ -790,10 +848,13 @@ function startDeadlineCountdown(element, deadlineValue) {
         const hours = Math.floor((totalSeconds % 86400) / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-        element.textContent = `${days}일 ${hours}시간 ${minutes}분 ${seconds}초`;
+        setValue('days', days);
+        setValue('hours', hours);
+        setValue('minutes', minutes);
+        setValue('seconds', seconds);
     };
 
-    element.style.display = 'block';
+    element.style.display = 'flex';
     update();
     window.deadlineCountdownTimer = setInterval(update, 1000);
 }
