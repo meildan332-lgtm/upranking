@@ -153,6 +153,7 @@
         input[type="text"],
         input[type="number"],
         input[type="date"],
+        input[type="datetime-local"],
         textarea,
         select {
             width: 100%;
@@ -407,18 +408,22 @@
                     <div class="form-group">
                         <label>커트라인 순위</label>
                         <input type="number" id="cutoff" placeholder="예: 10">
+                        <label class="checkbox-label" style="margin-top:10px;">
+                            <input type="checkbox" id="showCutoffGap">
+                            커트라인 표시
+                        </label>
                     </div>
                     <div class="form-group">
-                        <label>마감 일자 (선택)</label>
-                        <input type="date" id="deadline">
+                        <label>마감 날짜 및 시간</label>
+                        <input type="datetime-local" id="deadline">
+                        <label class="checkbox-label" style="margin-top:10px;">
+                            <input type="checkbox" id="showDeadline">
+                            마감 카운트다운 표시
+                        </label>
                     </div>
                 </div>
 
                 <div class="form-group" style="margin-top:14px;">
-                    <label class="checkbox-label">
-                        <input type="checkbox" id="showCutoffGap">
-                        내 순위 카드 위에 커트라인 다음 순위와 UP 차이 표시
-                    </label>
                     <p class="field-hint">예: 커트라인이 45위라면 내 UP 수와 46위의 UP 수 차이를 표시합니다.</p>
                 </div>
             </div>
@@ -708,6 +713,7 @@
             const cutoff = document.getElementById('cutoff').value;
             const showCutoffGap = document.getElementById('showCutoffGap').checked;
             const deadline = document.getElementById('deadline').value;
+            const showDeadline = document.getElementById('showDeadline').checked;
             const pinMode = document.querySelector('input[name="pinMode"]:checked').value;
             const pinNicknamesRaw = document.getElementById('pinNicknames').value;
             const mode = document.querySelector('input[name="mode"]:checked').value;
@@ -743,7 +749,9 @@
                 finalUrl += `&aroundUp=${encodeURIComponent(aroundUp || '3')}&aroundDown=${encodeURIComponent(aroundDown || '3')}`;
             }
 
-            if (deadline) finalUrl += `&deadline=${deadline}`;
+            if (showDeadline && deadline) {
+                finalUrl += `&deadlineMode=on&deadline=${encodeURIComponent(deadline)}`;
+            }
 
             if (qrMode === 'on') {
                 finalUrl += `&qrpos=${encodeURIComponent(qrPosition)}`;

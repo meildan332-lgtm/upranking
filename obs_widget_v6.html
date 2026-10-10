@@ -91,8 +91,12 @@
 
         #widget-main { display: flex; flex-direction: column; gap: 12px; }
         #ranking-section { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-        body.qr-bottom #qr-section { order: 2; }
+        #qr-column { display: none; flex-direction: column; gap: 12px; min-width: 0; }
+        body.qr-bottom #qr-column { order: 2; }
         body.qr-bottom #ranking-section { order: 1; }
+        body.qr-bottom #qr-column .qr-cutoff-slot { order: 1; }
+        body.qr-bottom #qr-column .deadline-countdown { order: 2; }
+        body.qr-bottom #qr-column #qr-section { order: 3; }
 
         body.layout-horizontal #scale-stage {
             width: 900px;
@@ -104,12 +108,15 @@
             align-items: flex-start;
             gap: 18px;
         }
-        body.layout-horizontal .qr-section {
+        body.layout-horizontal #qr-column {
             flex: 0 0 var(--qr-column-width, 50%);
             width: var(--qr-column-width, 50%);
+            align-self: flex-start;
+        }
+        body.layout-horizontal .qr-section {
+            width: 100%;
             flex-direction: column;
             flex-wrap: nowrap;
-            align-self: flex-start;
             margin-top: 0;
         }
         body.layout-horizontal .qr-image { width: 100%; margin: 0 auto; }
@@ -122,6 +129,19 @@
         }
         .widget-title { font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0; }
         .deadline-text { font-size: 14px; color: var(--text-primary); font-weight: bold; background: var(--deadline-bg); padding: 4px 8px; border-radius: 6px; }
+        .deadline-countdown {
+            display: none;
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            box-sizing: border-box;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            font-size: 20px;
+            font-weight: 900;
+            text-align: center;
+        }
 
         /* 댓글 목록 자체에 간격을 줘서 커트라인/다음 댓글이 서로 겹치지 않도록 함 */
         #comment-list { display: flex; flex-direction: column; gap: 10px; }
@@ -387,7 +407,7 @@
             box-shadow: 0 4px 10px var(--card-shadow);
         }
 
-        /* UP 차이는 댓글 순위와 무관하게 항상 QR 코드 바로 아래에 표시 */
+        /* UP 차이는 댓글 순위와 무관하게 QR 카드와 순위 목록 사이에 표시 */
         .qr-cutoff-slot { flex: 0 0 100%; width: 100%; }
         .qr-cutoff-slot:empty { display: none; }
 
@@ -537,8 +557,10 @@
 </head>
 <body>
     <div id="scale-stage">
-    <div id="widget-container">
+        <div id="widget-container">
         <div id="widget-main">
+            <div id="qr-column">
+            <div class="deadline-countdown" id="deadline-countdown"></div>
             <div class="qr-section" id="qr-section">
                 <div id="qr-code-img" class="qr-image">
                     <img id="qr-profile-image" class="qr-profile-image" alt="내 댓글 프로필 사진">
@@ -546,7 +568,8 @@
                 <div class="qr-text-col">
                     <div class="qr-desc" id="qr-desc"></div>
                 </div>
-                <div class="qr-cutoff-slot" id="qr-cutoff-slot"></div>
+            </div>
+            <div class="qr-cutoff-slot" id="qr-cutoff-slot"></div>
             </div>
 
             <div id="ranking-section">
@@ -736,10 +759,41 @@ function applyFontPreset(fontId) {
     document.body.style.fontFamily = preset.family;
 }
 
+function startDeadlineCountdown(element, deadlineValue) {
+    if (window.deadlineCountdownTimer) clearInterval(window.deadlineCountdownTimer);
+
+    const deadlineTime = new Date(deadlineValue).getTime();
+    if (!Number.isFinite(deadlineTime)) {
+        element.style.display = 'none';
+        return;
+    }
+
+    const update = () => {
+        const remaining = Math.max(0, deadlineTime - Date.now());
+        if (remaining <= 0) {
+            element.textContent = '마감되었습니다';
+            if (window.deadlineCountdownTimer) clearInterval(window.deadlineCountdownTimer);
+            return;
+        }
+
+        const totalSeconds = Math.floor(remaining / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        element.textContent = `${days}일 ${hours}시간 ${minutes}분 ${seconds}초`;
+    };
+
+    element.style.display = 'block';
+    update();
+    window.deadlineCountdownTimer = setInterval(update, 1000);
+}
+
 // 1. 위젯 화면의 기본 정보(제목, 마감일, QR) 세팅하기
 function setupWidgetUI(urlParams) {
     const title = urlParams.get('title');
     const deadline = urlParams.get('deadline');
+    const deadlineEnabled = urlParams.get('deadlineMode') === 'on' || (!!deadline && !urlParams.has('deadlineMode'));
     const font = urlParams.get('font') || 'gmarket';
     const design = urlParams.get('design') || 'default';
     const theme = urlParams.get('theme') || 'light';
@@ -777,29 +831,34 @@ function setupWidgetUI(urlParams) {
         }
     }
 
-    if (deadline && deadlineEl) {
-        deadlineEl.innerText = `마감일: ${deadline}`;
-        deadlineEl.style.display = "inline-block";
-    }
+    if (deadlineEl) deadlineEl.style.display = "none";
 
-    if (headerEl && !title?.trim() && !deadline) {
+    if (headerEl && !title?.trim()) {
         headerEl.style.display = "none";
     }
 
     const qrSection = document.getElementById("qr-section");
+    const qrColumn = document.getElementById("qr-column");
+    const deadlineCountdown = document.getElementById("deadline-countdown");
     const qrDesc = document.getElementById("qr-desc");
     const qrImg = document.getElementById("qr-code-img");
     // QR 코드 연결 링크: "직접 입력"을 선택했으면 그 주소를, 아니면 댓글 링크(url)를 그대로 사용
     const linkUrl = (qrLinkMode === 'custom' && qrCustomLink) ? qrCustomLink : urlParams.get('url');
 
+    if (deadlineEnabled && deadline && deadlineCountdown) {
+        if (qrColumn) qrColumn.style.display = "flex";
+        startDeadlineCountdown(deadlineCountdown, deadline);
+    }
+
     if (qrMode === 'on') {
+        if (qrColumn) qrColumn.style.display = "flex";
         if (qrSection) qrSection.style.display = "flex";
         if (qrDesc && qrText) qrDesc.innerText = qrText;
 
         // 댓글 카드 가로폭(=qr-section 폭) 기준 QR 코드 크기 지정
         if (qrImg) {
             if (horizontalLayout) {
-                qrSection.style.setProperty('--qr-column-width', sizePercent + '%');
+                if (qrColumn) qrColumn.style.setProperty('--qr-column-width', sizePercent + '%');
                 qrImg.style.width = '100%';
             } else {
                 qrImg.style.width = (Number.isFinite(sizePercent) ? sizePercent : 100) + '%';
@@ -879,7 +938,7 @@ async function fetchRealComments() {
         const data = await response.json();
         console.log("SOOP 원본 데이터:", data);
 
-        renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDown, pinEnabled, pinNicknames, showCutoffGap);
+        renderComments(data, targetCommentId, showCutoffGap ? cutoff : 0, mode, aroundUp, aroundDown, pinEnabled, pinNicknames, showCutoffGap);
 
         const updateEl = document.getElementById("update-time-display");
         if (updateEl) {
@@ -1009,8 +1068,8 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
 
     const canShowCutoffGap = showCutoffGap && cutoffDiff !== null && pinnedComment;
 
-    // 상단 고정 설정과 실제 순위 위치의 영향을 받지 않도록 QR 영역에서 별도로 렌더링한다.
-    renderQrCutoffGap(canShowCutoffGap ? cutoffDiff : null, comparisonRank);
+    // 주변 보기에서는 실제 커트라인 경계에, 나머지 모드에서는 QR과 순위 목록 사이에 표시한다.
+    renderQrCutoffGap(canShowCutoffGap && mode !== 'around' ? cutoffDiff : null, comparisonRank);
 
     // 상단 고정 카드 (켜기 상태이거나, "내 순위만 보기" 모드일 때만 표시)
     const showPinnedCard = pinnedComment && (pinEnabled || mode === 'mine');
@@ -1062,6 +1121,11 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
             upDelta
         });
         commentStats.set(key, { rank, upCount });
+
+        // 예: 커트라인 45위라면 45위 카드 바로 뒤, 즉 45위와 46위 사이에 표시한다.
+        if (mode === 'around' && canShowCutoffGap && rank === cutoff) {
+            rows.push({ key: 'cutoff-gap', type: 'cutoff', diff: cutoffDiff, comparisonRank });
+        }
     });
 
     // 순위 변동 애니메이션(FLIP)을 위해 재배치 전 기존 엘리먼트 위치 기록
@@ -1174,6 +1238,8 @@ function renderQrCutoffGap(diff, comparisonRank) {
     if (!row) {
         row = createCutoffElement(diff, comparisonRank);
         slot.appendChild(row);
+        const qrColumn = document.getElementById('qr-column');
+        if (qrColumn) qrColumn.style.display = 'flex';
     } else {
         updateCutoffElement(row, diff, comparisonRank);
     }
