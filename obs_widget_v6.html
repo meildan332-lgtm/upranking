@@ -358,7 +358,7 @@
             min-width: 100px;
         }
 
-        /* 내 카드 위의 커트라인 다음 순위와 UP 차이 */
+        /* 내 댓글과 커트라인 순위의 UP 차이 */
         .cutoff-row {
             position: relative;
             height: 46px;
@@ -1093,9 +1093,9 @@ function renderComments(data, targetCommentId, cutoff, mode, aroundUp, aroundDow
     // 이번 새로고침에서 보여야 할 행(row) 순서 계산
     const rows = [];
 
-    // 내 UP 수와 커트라인 바로 다음 순위의 UP 수 차이를 계산
+    // 내 UP 수와 커트라인 순위의 UP 수 차이를 계산
     let cutoffDiff = null;
-    const comparisonRank = cutoff + 1;
+    const comparisonRank = cutoff;
     if (showCutoffGap && pinnedComment && cutoff > 0 && rankedComments.length >= comparisonRank) {
         const comparisonComment = rankedComments[comparisonRank - 1];
         const myUp = pinnedComment.likeCnt ?? pinnedComment.up_cnt ?? pinnedComment.good_cnt ?? 0;
