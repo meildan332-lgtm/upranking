@@ -132,7 +132,7 @@
         .deadline-countdown {
             display: none;
             width: 100%;
-            padding: 4px 0;
+            padding: 10px 0;
             border: 0;
             box-sizing: border-box;
             background: transparent;
@@ -144,6 +144,28 @@
             font-weight: 900;
             line-height: 1;
             font-variant-numeric: tabular-nums;
+        }
+        .countdown-unit {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 4px;
+            margin-right: 12px;
+        }
+        .countdown-unit:last-child { margin-right: 0; }
+        .countdown-value {
+            min-width: 42px;
+            color: var(--text-primary);
+            font-size: 34px;
+            font-weight: 900;
+            line-height: 1;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+        .countdown-label {
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1;
         }
         .countdown-ended { font-size: 22px; color: var(--text-primary); }
 
@@ -794,8 +816,9 @@ function startDeadlineCountdown(element, deadlineValue) {
         const hours = Math.floor((totalSeconds % 86400) / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
-        const timeText = [hours, minutes, seconds].map(value => String(value).padStart(2, '0')).join(':');
-        element.textContent = days > 0 ? `${days}일 ${timeText}` : timeText;
+        const unitMarkup = (value, label, pad = true) =>
+            `<span class="countdown-unit"><strong class="countdown-value">${pad ? String(value).padStart(2, '0') : value}</strong><span class="countdown-label">${label}</span></span>`;
+        element.innerHTML = `${days > 0 ? unitMarkup(days, '일', false) : ''}${unitMarkup(hours, '시간')}${unitMarkup(minutes, '분')}${unitMarkup(seconds, '초')}`;
     };
 
     element.style.display = 'flex';
