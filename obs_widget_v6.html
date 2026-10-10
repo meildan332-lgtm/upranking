@@ -200,14 +200,16 @@
             font-weight: 800;
         }
         body:not(.design-ios) .profile-pic {
-            align-self: stretch;
+            align-self: center;
             width: 76px;
-            height: auto;
-            min-height: 74px;
+            height: 76px;
+            min-height: 0;
+            aspect-ratio: 1 / 1;
             margin-right: 0;
             border: 0;
             border-radius: 0;
-            object-fit: contain;
+            object-fit: cover;
+            object-position: center;
             flex: 0 0 76px;
             order: 1;
         }
@@ -290,7 +292,8 @@
         }
         body:not(.design-ios) .pinned-comment .profile-pic {
             width: 76px;
-            min-height: 74px;
+            height: 76px;
+            min-height: 0;
             flex-basis: 76px;
         }
         body:not(.design-ios) .pinned-comment .rank-number,
@@ -316,7 +319,8 @@
         }
         body:not(.design-ios) .pinned-comment.ranking-list-comment .profile-pic {
             width: 76px;
-            min-height: 74px;
+            height: 76px;
+            min-height: 0;
             flex-basis: 76px;
         }
         body:not(.design-ios) .pinned-comment.ranking-list-comment .rank-number,
